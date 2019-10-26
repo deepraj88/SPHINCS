@@ -46,32 +46,32 @@ int crypto_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
  * Format sk: [SK_SEED || SK_PRF || PUB_SEED || root]
  * Format pk: [root || PUB_SEED]
  */
-int crypto_sign_keypair(unsigned char *pk, unsigned char *sk);
+int crypto_sign_keypair(unsigned char pk[SPX_PK_BYTES], unsigned char sk[SPX_SK_BYTES]);
 
 /**
  * Returns an array containing a detached signature.
  */
-int crypto_sign_signature(uint8_t *sig, size_t *siglen,
-                          const uint8_t *m, size_t mlen, const uint8_t *sk);
+int crypto_sign_signature(uint8_t *sig, unsigned long long *siglen,
+                          const uint8_t *m, unsigned long long mlen, const uint8_t *sk);
 
 /**
  * Verifies a detached signature and message under a given public key.
  */
-int crypto_sign_verify(const uint8_t *sig, size_t siglen,
-                       const uint8_t *m, size_t mlen, const uint8_t *pk);
+int crypto_sign_verify(const uint8_t *sig, unsigned long long siglen,
+                       const uint8_t *m, unsigned long long mlen, const uint8_t *pk);
 
 /**
  * Returns an array containing the signature followed by the message.
  */
-int crypto_sign(unsigned char *sm, unsigned long long *smlen,
-                const unsigned char *m, unsigned long long mlen,
-                const unsigned char *sk);
+int crypto_sign(unsigned char sm[3300+CRYPTO_BYTES], unsigned long long smlen[1],
+                const unsigned char m[3300], unsigned long long mlen,
+                const unsigned char sk[SPX_SK_BYTES]);
 
 /**
  * Verifies a given signature-message pair under a given public key.
  */
-int crypto_sign_open(unsigned char *m, unsigned long long *mlen,
-                     const unsigned char *sm, unsigned long long smlen,
-                     const unsigned char *pk);
+int crypto_sign_open(unsigned char m[3300+CRYPTO_BYTES], unsigned long long mlen[1],
+                     const unsigned char sm[3300+CRYPTO_BYTES], unsigned long long smlen,
+                     const unsigned char pk[SPX_PK_BYTES]);
 
 #endif

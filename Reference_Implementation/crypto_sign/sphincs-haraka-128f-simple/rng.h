@@ -52,4 +52,7 @@ randombytes_init(unsigned char *entropy_input,
 int
 randombytes(unsigned char *x, unsigned long long xlen);
 
+int
+randombytes_sign(unsigned char *x, unsigned long long xlen);
+
 #endif /* rng_h */

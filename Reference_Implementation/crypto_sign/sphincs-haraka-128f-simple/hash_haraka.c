@@ -23,12 +23,15 @@ void prf_addr(unsigned char *out, const unsigned char *key,
     unsigned char buf[SPX_ADDR_BYTES];
     /* Since SPX_N may be smaller than 32, we need a temporary buffer. */
     unsigned char outbuf[32];
+    int loop;
 
     (void)key; /* Suppress an 'unused parameter' warning. */
 
     addr_to_bytes(buf, addr);
     haraka256_sk(outbuf, buf);
-    memcpy(out, outbuf, SPX_N);
+    //memcpy(out, outbuf, SPX_N);
+    for(loop=0;loop<SPX_N;loop++)
+    	out[loop]=outbuf[loop];
 }
 
 /**
@@ -67,6 +70,7 @@ void hash_message(unsigned char *digest, uint64_t *tree, uint32_t *leaf_idx,
     unsigned char buf[SPX_DGST_BYTES];
     unsigned char *bufp = buf;
     uint8_t s_inc[65];
+    int loop;
 
     haraka_S_inc_init(s_inc);
     haraka_S_inc_absorb(s_inc, R, SPX_N);
@@ -75,7 +79,9 @@ void hash_message(unsigned char *digest, uint64_t *tree, uint32_t *leaf_idx,
     haraka_S_inc_finalize(s_inc);
     haraka_S_inc_squeeze(buf, SPX_DGST_BYTES, s_inc);
 
-    memcpy(digest, bufp, SPX_FORS_MSG_BYTES);
+    //memcpy(digest, bufp, SPX_FORS_MSG_BYTES);
+    for(loop=0;loop<SPX_FORS_MSG_BYTES;loop++)
+    	digest[loop] = bufp[loop];
     bufp += SPX_FORS_MSG_BYTES;
 
 #if SPX_TREE_BITS > 64

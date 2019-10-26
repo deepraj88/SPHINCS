@@ -38,9 +38,12 @@ static void gen_chain(unsigned char *out, const unsigned char *in,
                       const unsigned char *pub_seed, uint32_t addr[8])
 {
     uint32_t i;
+    int loop;
 
     /* Initialize out with the value at position 'start'. */
-    memcpy(out, in, SPX_N);
+    //memcpy(out, in, SPX_N);
+    for(loop=0;loop<SPX_N;loop++)
+    	out[loop]=in[loop];
 
     /* Iterate 'steps' calls to the hash function. */
     for (i = start; i < (start+steps) && i < SPX_WOTS_W; i++) {
