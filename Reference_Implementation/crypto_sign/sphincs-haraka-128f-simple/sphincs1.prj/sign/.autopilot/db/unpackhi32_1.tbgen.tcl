@@ -12,16 +12,12 @@ set isEnableWaveformDebug 1
 set C_modelName {unpackhi32.1}
 set C_modelType { void 0 }
 set C_modelArgList {
-	{ t int 8 regular {array 64 { 2 3 } 1 1 }  }
-	{ a_offset int 8 regular  }
-	{ b_offset int 7 regular  }
+	{ t int 8 regular {array 32 { 2 3 } 1 1 }  }
 }
 set C_modelArgMapList {[ 
-	{ "Name" : "t", "interface" : "memory", "bitwidth" : 8, "direction" : "READWRITE"} , 
- 	{ "Name" : "a_offset", "interface" : "wire", "bitwidth" : 8, "direction" : "READONLY"} , 
- 	{ "Name" : "b_offset", "interface" : "wire", "bitwidth" : 7, "direction" : "READONLY"} ]}
+	{ "Name" : "t", "interface" : "memory", "bitwidth" : 8, "direction" : "READWRITE"} ]}
 # RTL Port declarations: 
-set portNum 13
+set portNum 11
 set portList { 
 	{ ap_clk sc_in sc_logic 1 clock -1 } 
 	{ ap_rst sc_in sc_logic 1 reset -1 active_high_sync } 
@@ -29,13 +25,11 @@ set portList {
 	{ ap_done sc_out sc_logic 1 predone -1 } 
 	{ ap_idle sc_out sc_logic 1 done -1 } 
 	{ ap_ready sc_out sc_logic 1 ready -1 } 
-	{ t_address0 sc_out sc_lv 6 signal 0 } 
+	{ t_address0 sc_out sc_lv 5 signal 0 } 
 	{ t_ce0 sc_out sc_logic 1 signal 0 } 
 	{ t_we0 sc_out sc_logic 1 signal 0 } 
 	{ t_d0 sc_out sc_lv 8 signal 0 } 
 	{ t_q0 sc_in sc_lv 8 signal 0 } 
-	{ a_offset sc_in sc_lv 8 signal 1 } 
-	{ b_offset sc_in sc_lv 7 signal 2 } 
 }
 set NewPortList {[ 
 	{ "name": "ap_clk", "direction": "in", "datatype": "sc_logic", "bitwidth":1, "type": "clock", "bundle":{"name": "ap_clk", "role": "default" }} , 
@@ -44,13 +38,11 @@ set NewPortList {[
  	{ "name": "ap_done", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "predone", "bundle":{"name": "ap_done", "role": "default" }} , 
  	{ "name": "ap_idle", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "done", "bundle":{"name": "ap_idle", "role": "default" }} , 
  	{ "name": "ap_ready", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "ready", "bundle":{"name": "ap_ready", "role": "default" }} , 
- 	{ "name": "t_address0", "direction": "out", "datatype": "sc_lv", "bitwidth":6, "type": "signal", "bundle":{"name": "t", "role": "address0" }} , 
+ 	{ "name": "t_address0", "direction": "out", "datatype": "sc_lv", "bitwidth":5, "type": "signal", "bundle":{"name": "t", "role": "address0" }} , 
  	{ "name": "t_ce0", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "signal", "bundle":{"name": "t", "role": "ce0" }} , 
  	{ "name": "t_we0", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "signal", "bundle":{"name": "t", "role": "we0" }} , 
  	{ "name": "t_d0", "direction": "out", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "t", "role": "d0" }} , 
- 	{ "name": "t_q0", "direction": "in", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "t", "role": "q0" }} , 
- 	{ "name": "a_offset", "direction": "in", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "a_offset", "role": "default" }} , 
- 	{ "name": "b_offset", "direction": "in", "datatype": "sc_lv", "bitwidth":7, "type": "signal", "bundle":{"name": "b_offset", "role": "default" }}  ]}
+ 	{ "name": "t_q0", "direction": "in", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "t", "role": "q0" }}  ]}
 
 set RtlHierarchyInfo {[
 	{"ID" : "0", "Level" : "0", "Path" : "`AUTOTB_DUT_INST", "Parent" : "", "Child" : ["1"],
@@ -67,17 +59,13 @@ set RtlHierarchyInfo {[
 		"InDataflowNetwork" : "0",
 		"HasNonBlockingOperation" : "0",
 		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
+			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"}]},
 	{"ID" : "1", "Level" : "1", "Path" : "`AUTOTB_DUT_INST.tmp_U", "Parent" : "0"}]}
 
 
 set ArgLastReadFirstWriteLatency {
 	unpackhi32_1 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}}
+		t {Type IO LastRead 4 FirstWrite 6}}}
 
 set hasDtUnsupportedChannel 0
 
@@ -90,7 +78,5 @@ set PipelineEnableSignalInfo {[
 ]}
 
 set Spec2ImplPortList { 
-	t { ap_memory {  { t_address0 mem_address 1 6 }  { t_ce0 mem_ce 1 1 }  { t_we0 mem_we 1 1 }  { t_d0 mem_din 1 8 }  { t_q0 mem_dout 0 8 } } }
-	a_offset { ap_none {  { a_offset in_data 0 8 } } }
-	b_offset { ap_none {  { b_offset in_data 0 7 } } }
+	t { ap_memory {  { t_address0 mem_address 1 5 }  { t_ce0 mem_ce 1 1 }  { t_we0 mem_we 1 1 }  { t_d0 mem_din 1 8 }  { t_q0 mem_dout 0 8 } } }
 }

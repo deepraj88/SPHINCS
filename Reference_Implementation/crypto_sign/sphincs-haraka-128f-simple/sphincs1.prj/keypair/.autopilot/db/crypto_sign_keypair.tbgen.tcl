@@ -1,3 +1,11 @@
+set C_TypeInfoList {{ 
+"crypto_sign_keypair" : [[], {"return": [[], {"scalar": "int"}] }, [{"ExternC" : 0}], [ {"pk": [[], {"array": [ {"scalar": "unsigned char"}, [32]]}] }, {"sk": [[], {"array": [ {"scalar": "unsigned char"}, [64]]}] }],["0","1","2"],""],
+ "0": [ "rc_sseed", [[], {"array": [ {"scalar": "unsigned char"}, [40,16]]}],""],
+ "1": [ "rc", [[], {"array": [ {"scalar": "unsigned char"}, [40,16]]}],""],
+ "2": [ "DRBG_ctx", [[],"3"],""], 
+"3": [ "AES256_CTR_DRBG_struct", {"typedef": [[[],"4"],""]}], 
+"4": [ "", {"struct": [[],[],[{ "Key": [[],  {"array": [ {"scalar": "unsigned char"}, [32]]}]},{ "V": [[],  {"array": [ {"scalar": "unsigned char"}, [16]]}]},{ "reseed_counter": [[],  {"scalar": "int"}]}],""]}]
+}}
 set moduleName crypto_sign_keypair
 set isTaskLevelControl 1
 set isCombinational 0
@@ -17,6 +25,8 @@ set C_modelArgList {
 	{ DRBG_ctx_V int 8 regular {array 16 { 2 1 } 1 1 } {global 2}  }
 	{ DRBG_ctx_Key int 8 regular {array 32 { 2 1 } 1 1 } {global 2}  }
 	{ DRBG_ctx_reseed_counter int 32 regular {pointer 2} {global 2}  }
+	{ rc int 8 regular {array 640 { 2 1 } 1 1 } {global 2}  }
+	{ rc_sseed int 8 regular {array 640 { 2 1 } 1 1 } {global 2}  }
 }
 set C_modelArgMapList {[ 
 	{ "Name" : "pk", "interface" : "memory", "bitwidth" : 8, "direction" : "READWRITE", "bitSlice":[{"low":0,"up":7,"cElement": [{"cName": "pk","cData": "unsigned char","bit_use": { "low": 0,"up": 7},"cArray": [{"low" : 0,"up" : 31,"step" : 1}]}]}]} , 
@@ -24,9 +34,11 @@ set C_modelArgMapList {[
  	{ "Name" : "DRBG_ctx_V", "interface" : "memory", "bitwidth" : 8, "direction" : "READWRITE", "bitSlice":[{"low":0,"up":7,"cElement": [{"cName": "DRBG_ctx.V","cData": "unsigned char","bit_use": { "low": 0,"up": 7},"cArray": [{"low" : 0,"up" : 15,"step" : 1}]}]}], "extern" : 0} , 
  	{ "Name" : "DRBG_ctx_Key", "interface" : "memory", "bitwidth" : 8, "direction" : "READWRITE", "bitSlice":[{"low":0,"up":7,"cElement": [{"cName": "DRBG_ctx.Key","cData": "unsigned char","bit_use": { "low": 0,"up": 7},"cArray": [{"low" : 0,"up" : 31,"step" : 1}]}]}], "extern" : 0} , 
  	{ "Name" : "DRBG_ctx_reseed_counter", "interface" : "wire", "bitwidth" : 32, "direction" : "READWRITE", "bitSlice":[{"low":0,"up":31,"cElement": [{"cName": "DRBG_ctx.reseed_counter","cData": "int","bit_use": { "low": 0,"up": 31},"cArray": [{"low" : 0,"up" : 0,"step" : 1}]}]}], "extern" : 0} , 
+ 	{ "Name" : "rc", "interface" : "memory", "bitwidth" : 8, "direction" : "READWRITE", "bitSlice":[{"low":0,"up":7,"cElement": [{"cName": "rc","cData": "unsigned char","bit_use": { "low": 0,"up": 7},"cArray": [{"low" : 0,"up" : 39,"step" : 1},{"low" : 0,"up" : 15,"step" : 1}]}]}], "extern" : 0} , 
+ 	{ "Name" : "rc_sseed", "interface" : "memory", "bitwidth" : 8, "direction" : "READWRITE", "bitSlice":[{"low":0,"up":7,"cElement": [{"cName": "rc_sseed","cData": "unsigned char","bit_use": { "low": 0,"up": 7},"cArray": [{"low" : 0,"up" : 39,"step" : 1},{"low" : 0,"up" : 15,"step" : 1}]}]}], "extern" : 0} , 
  	{ "Name" : "ap_return", "interface" : "wire", "bitwidth" : 32,"bitSlice":[{"low":0,"up":31,"cElement": [{"cName": "return","cData": "int","bit_use": { "low": 0,"up": 31},"cArray": [{"low" : 0,"up" : 1,"step" : 0}]}]}]} ]}
 # RTL Port declarations: 
-set portNum 36
+set portNum 52
 set portList { 
 	{ ap_clk sc_in sc_logic 1 clock -1 } 
 	{ ap_rst sc_in sc_logic 1 reset -1 active_high_sync } 
@@ -63,6 +75,22 @@ set portList {
 	{ DRBG_ctx_reseed_counter_i sc_in sc_lv 32 signal 4 } 
 	{ DRBG_ctx_reseed_counter_o sc_out sc_lv 32 signal 4 } 
 	{ DRBG_ctx_reseed_counter_o_ap_vld sc_out sc_logic 1 outvld 4 } 
+	{ rc_address0 sc_out sc_lv 10 signal 5 } 
+	{ rc_ce0 sc_out sc_logic 1 signal 5 } 
+	{ rc_we0 sc_out sc_logic 1 signal 5 } 
+	{ rc_d0 sc_out sc_lv 8 signal 5 } 
+	{ rc_q0 sc_in sc_lv 8 signal 5 } 
+	{ rc_address1 sc_out sc_lv 10 signal 5 } 
+	{ rc_ce1 sc_out sc_logic 1 signal 5 } 
+	{ rc_q1 sc_in sc_lv 8 signal 5 } 
+	{ rc_sseed_address0 sc_out sc_lv 10 signal 6 } 
+	{ rc_sseed_ce0 sc_out sc_logic 1 signal 6 } 
+	{ rc_sseed_we0 sc_out sc_logic 1 signal 6 } 
+	{ rc_sseed_d0 sc_out sc_lv 8 signal 6 } 
+	{ rc_sseed_q0 sc_in sc_lv 8 signal 6 } 
+	{ rc_sseed_address1 sc_out sc_lv 10 signal 6 } 
+	{ rc_sseed_ce1 sc_out sc_logic 1 signal 6 } 
+	{ rc_sseed_q1 sc_in sc_lv 8 signal 6 } 
 	{ ap_return sc_out sc_lv 32 signal -1 } 
 }
 set NewPortList {[ 
@@ -101,10 +129,26 @@ set NewPortList {[
  	{ "name": "DRBG_ctx_reseed_counter_i", "direction": "in", "datatype": "sc_lv", "bitwidth":32, "type": "signal", "bundle":{"name": "DRBG_ctx_reseed_counter", "role": "i" }} , 
  	{ "name": "DRBG_ctx_reseed_counter_o", "direction": "out", "datatype": "sc_lv", "bitwidth":32, "type": "signal", "bundle":{"name": "DRBG_ctx_reseed_counter", "role": "o" }} , 
  	{ "name": "DRBG_ctx_reseed_counter_o_ap_vld", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "outvld", "bundle":{"name": "DRBG_ctx_reseed_counter", "role": "o_ap_vld" }} , 
+ 	{ "name": "rc_address0", "direction": "out", "datatype": "sc_lv", "bitwidth":10, "type": "signal", "bundle":{"name": "rc", "role": "address0" }} , 
+ 	{ "name": "rc_ce0", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "signal", "bundle":{"name": "rc", "role": "ce0" }} , 
+ 	{ "name": "rc_we0", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "signal", "bundle":{"name": "rc", "role": "we0" }} , 
+ 	{ "name": "rc_d0", "direction": "out", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "rc", "role": "d0" }} , 
+ 	{ "name": "rc_q0", "direction": "in", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "rc", "role": "q0" }} , 
+ 	{ "name": "rc_address1", "direction": "out", "datatype": "sc_lv", "bitwidth":10, "type": "signal", "bundle":{"name": "rc", "role": "address1" }} , 
+ 	{ "name": "rc_ce1", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "signal", "bundle":{"name": "rc", "role": "ce1" }} , 
+ 	{ "name": "rc_q1", "direction": "in", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "rc", "role": "q1" }} , 
+ 	{ "name": "rc_sseed_address0", "direction": "out", "datatype": "sc_lv", "bitwidth":10, "type": "signal", "bundle":{"name": "rc_sseed", "role": "address0" }} , 
+ 	{ "name": "rc_sseed_ce0", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "signal", "bundle":{"name": "rc_sseed", "role": "ce0" }} , 
+ 	{ "name": "rc_sseed_we0", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "signal", "bundle":{"name": "rc_sseed", "role": "we0" }} , 
+ 	{ "name": "rc_sseed_d0", "direction": "out", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "rc_sseed", "role": "d0" }} , 
+ 	{ "name": "rc_sseed_q0", "direction": "in", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "rc_sseed", "role": "q0" }} , 
+ 	{ "name": "rc_sseed_address1", "direction": "out", "datatype": "sc_lv", "bitwidth":10, "type": "signal", "bundle":{"name": "rc_sseed", "role": "address1" }} , 
+ 	{ "name": "rc_sseed_ce1", "direction": "out", "datatype": "sc_logic", "bitwidth":1, "type": "signal", "bundle":{"name": "rc_sseed", "role": "ce1" }} , 
+ 	{ "name": "rc_sseed_q1", "direction": "in", "datatype": "sc_lv", "bitwidth":8, "type": "signal", "bundle":{"name": "rc_sseed", "role": "q1" }} , 
  	{ "name": "ap_return", "direction": "out", "datatype": "sc_lv", "bitwidth":32, "type": "signal", "bundle":{"name": "ap_return", "role": "default" }}  ]}
 
 set RtlHierarchyInfo {[
-	{"ID" : "0", "Level" : "0", "Path" : "`AUTOTB_DUT_INST", "Parent" : "", "Child" : ["1", "2", "169"],
+	{"ID" : "0", "Level" : "0", "Path" : "`AUTOTB_DUT_INST", "Parent" : "", "Child" : ["1", "2", "125"],
 		"CDFG" : "crypto_sign_keypair",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -129,19 +173,19 @@ set RtlHierarchyInfo {[
 					{"ID" : "2", "SubInstance" : "grp_crypto_sign_seed_key_fu_40", "Port" : "sk"}]},
 			{"Name" : "DRBG_ctx_V", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "169", "SubInstance" : "grp_randombytes_fu_57", "Port" : "DRBG_ctx_V"}]},
+					{"ID" : "125", "SubInstance" : "grp_randombytes_fu_57", "Port" : "DRBG_ctx_V"}]},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "169", "SubInstance" : "grp_randombytes_fu_57", "Port" : "sbox_1"}]},
+					{"ID" : "125", "SubInstance" : "grp_randombytes_fu_57", "Port" : "sbox_1"}]},
 			{"Name" : "Rcon", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "169", "SubInstance" : "grp_randombytes_fu_57", "Port" : "Rcon"}]},
+					{"ID" : "125", "SubInstance" : "grp_randombytes_fu_57", "Port" : "Rcon"}]},
 			{"Name" : "DRBG_ctx_Key", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "169", "SubInstance" : "grp_randombytes_fu_57", "Port" : "DRBG_ctx_Key"}]},
+					{"ID" : "125", "SubInstance" : "grp_randombytes_fu_57", "Port" : "DRBG_ctx_Key"}]},
 			{"Name" : "DRBG_ctx_reseed_counter", "Type" : "OVld", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "169", "SubInstance" : "grp_randombytes_fu_57", "Port" : "DRBG_ctx_reseed_counter"}]},
+					{"ID" : "125", "SubInstance" : "grp_randombytes_fu_57", "Port" : "DRBG_ctx_reseed_counter"}]},
 			{"Name" : "haraka_rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
 					{"ID" : "2", "SubInstance" : "grp_crypto_sign_seed_key_fu_40", "Port" : "haraka_rc"}]},
@@ -155,7 +199,7 @@ set RtlHierarchyInfo {[
 				"SubConnect" : [
 					{"ID" : "2", "SubInstance" : "grp_crypto_sign_seed_key_fu_40", "Port" : "rc_sseed"}]}]},
 	{"ID" : "1", "Level" : "1", "Path" : "`AUTOTB_DUT_INST.seed_U", "Parent" : "0"},
-	{"ID" : "2", "Level" : "1", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40", "Parent" : "0", "Child" : ["3", "4", "5", "6", "7", "126"],
+	{"ID" : "2", "Level" : "1", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40", "Parent" : "0", "Child" : ["3", "4", "5", "86"],
 		"CDFG" : "crypto_sign_seed_key",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -169,38 +213,36 @@ set RtlHierarchyInfo {[
 		"InDataflowNetwork" : "0",
 		"HasNonBlockingOperation" : "0",
 		"WaitState" : [
-			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_treehash_fu_217"},
+			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_treehash_wots_fu_217"},
 			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_tweak_constants_fu_231"}],
 		"Port" : [
 			{"Name" : "pk", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "126", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "pk_seed"}]},
+					{"ID" : "86", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "pk_seed"}]},
 			{"Name" : "sk", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "126", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "sk_seed"},
-					{"ID" : "7", "SubInstance" : "grp_treehash_fu_217", "Port" : "root"}]},
+					{"ID" : "5", "SubInstance" : "grp_treehash_wots_fu_217", "Port" : "root"},
+					{"ID" : "86", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "sk_seed"}]},
 			{"Name" : "seed", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "haraka_rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "126", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "haraka_rc"}]},
+					{"ID" : "86", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "haraka_rc"}]},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "126", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "rc"},
-					{"ID" : "7", "SubInstance" : "grp_treehash_fu_217", "Port" : "rc"}]},
+					{"ID" : "5", "SubInstance" : "grp_treehash_wots_fu_217", "Port" : "rc"},
+					{"ID" : "86", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "rc"}]},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "126", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "sbox"},
-					{"ID" : "7", "SubInstance" : "grp_treehash_fu_217", "Port" : "sbox"}]},
+					{"ID" : "5", "SubInstance" : "grp_treehash_wots_fu_217", "Port" : "sbox"},
+					{"ID" : "86", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "sbox"}]},
 			{"Name" : "rc_sseed", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "126", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "rc_sseed"},
-					{"ID" : "7", "SubInstance" : "grp_treehash_fu_217", "Port" : "rc_sseed"}]}]},
-	{"ID" : "3", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.rc_U", "Parent" : "2"},
-	{"ID" : "4", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.rc_sseed_U", "Parent" : "2"},
-	{"ID" : "5", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.auth_path_U", "Parent" : "2"},
-	{"ID" : "6", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.top_tree_addr_U", "Parent" : "2"},
-	{"ID" : "7", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217", "Parent" : "2", "Child" : ["8", "9", "10", "11", "12", "51", "90", "111", "124", "125"],
-		"CDFG" : "treehash",
+					{"ID" : "5", "SubInstance" : "grp_treehash_wots_fu_217", "Port" : "rc_sseed"},
+					{"ID" : "86", "SubInstance" : "grp_tweak_constants_fu_231", "Port" : "rc_sseed"}]}]},
+	{"ID" : "3", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.auth_path_U", "Parent" : "2"},
+	{"ID" : "4", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.top_tree_addr_U", "Parent" : "2"},
+	{"ID" : "5", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217", "Parent" : "2", "Child" : ["6", "7", "63", "84", "85"],
+		"CDFG" : "treehash_wots",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
@@ -213,35 +255,240 @@ set RtlHierarchyInfo {[
 		"InDataflowNetwork" : "0",
 		"HasNonBlockingOperation" : "0",
 		"WaitState" : [
-			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_thash_1_fu_484"},
-			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_thash_170_fu_496"},
-			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_thash_fu_508"},
-			{"State" : "ap_ST_fsm_state9", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_prf_addr_fu_519"}],
+			{"State" : "ap_ST_fsm_state3", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_wots_gen_leaf_fu_222"},
+			{"State" : "ap_ST_fsm_state9", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_thash_160_fu_238"}],
 		"Port" : [
 			{"Name" : "root", "Type" : "Memory", "Direction" : "O"},
 			{"Name" : "auth_path", "Type" : "Memory", "Direction" : "O"},
 			{"Name" : "tree_addr", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "51", "SubInstance" : "grp_thash_170_fu_496", "Port" : "addr"}]},
+					{"ID" : "7", "SubInstance" : "grp_wots_gen_leaf_fu_222", "Port" : "tree_addr"},
+					{"ID" : "63", "SubInstance" : "grp_thash_160_fu_238", "Port" : "addr"}]},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "51", "SubInstance" : "grp_thash_170_fu_496", "Port" : "sbox"},
-					{"ID" : "111", "SubInstance" : "grp_prf_addr_fu_519", "Port" : "sbox"},
-					{"ID" : "90", "SubInstance" : "grp_thash_fu_508", "Port" : "sbox"},
-					{"ID" : "12", "SubInstance" : "grp_thash_1_fu_484", "Port" : "sbox"}]},
+					{"ID" : "7", "SubInstance" : "grp_wots_gen_leaf_fu_222", "Port" : "sbox"},
+					{"ID" : "63", "SubInstance" : "grp_thash_160_fu_238", "Port" : "sbox"}]},
 			{"Name" : "rc_sseed", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "111", "SubInstance" : "grp_prf_addr_fu_519", "Port" : "rc_sseed"}]},
+					{"ID" : "7", "SubInstance" : "grp_wots_gen_leaf_fu_222", "Port" : "rc_sseed"}]},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "51", "SubInstance" : "grp_thash_170_fu_496", "Port" : "rc"},
-					{"ID" : "90", "SubInstance" : "grp_thash_fu_508", "Port" : "rc"},
-					{"ID" : "12", "SubInstance" : "grp_thash_1_fu_484", "Port" : "rc"}]}]},
-	{"ID" : "8", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.pk_U", "Parent" : "7"},
-	{"ID" : "9", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.wots_addr_U", "Parent" : "7"},
-	{"ID" : "10", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.wots_pk_addr_U", "Parent" : "7"},
-	{"ID" : "11", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.leaf_assign_U", "Parent" : "7"},
-	{"ID" : "12", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484", "Parent" : "7", "Child" : ["13", "14"],
+					{"ID" : "7", "SubInstance" : "grp_wots_gen_leaf_fu_222", "Port" : "rc"},
+					{"ID" : "63", "SubInstance" : "grp_thash_160_fu_238", "Port" : "rc"}]}]},
+	{"ID" : "6", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.stack_U", "Parent" : "5"},
+	{"ID" : "7", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222", "Parent" : "5", "Child" : ["8", "9", "10", "11", "30", "51"],
+		"CDFG" : "wots_gen_leaf",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "-1", "EstimateLatencyMax" : "-1",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"WaitState" : [
+			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_thash_fu_376"},
+			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_thash_1_fu_387"},
+			{"State" : "ap_ST_fsm_state9", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_prf_addr_fu_400"}],
+		"Port" : [
+			{"Name" : "leaf", "Type" : "Memory", "Direction" : "O",
+				"SubConnect" : [
+					{"ID" : "30", "SubInstance" : "grp_thash_1_fu_387", "Port" : "out_r"}]},
+			{"Name" : "leaf_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "addr_idx", "Type" : "None", "Direction" : "I"},
+			{"Name" : "tree_addr", "Type" : "Memory", "Direction" : "I"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "11", "SubInstance" : "grp_thash_fu_376", "Port" : "sbox"},
+					{"ID" : "30", "SubInstance" : "grp_thash_1_fu_387", "Port" : "sbox"},
+					{"ID" : "51", "SubInstance" : "grp_prf_addr_fu_400", "Port" : "sbox"}]},
+			{"Name" : "rc_sseed", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "51", "SubInstance" : "grp_prf_addr_fu_400", "Port" : "rc_sseed"}]},
+			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "11", "SubInstance" : "grp_thash_fu_376", "Port" : "rc"},
+					{"ID" : "30", "SubInstance" : "grp_thash_1_fu_387", "Port" : "rc"}]}]},
+	{"ID" : "8", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.pk_U", "Parent" : "7"},
+	{"ID" : "9", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.wots_addr_U", "Parent" : "7"},
+	{"ID" : "10", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.wots_pk_addr_U", "Parent" : "7"},
+	{"ID" : "11", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376", "Parent" : "7", "Child" : ["12", "13", "14", "15"],
+		"CDFG" : "thash",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "4101", "EstimateLatencyMax" : "4101",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"WaitState" : [
+			{"State" : "ap_ST_fsm_state9", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_fu_1671"}],
+		"Port" : [
+			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "in_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "addr", "Type" : "Memory", "Direction" : "I"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "15", "SubInstance" : "grp_haraka512_perm_fu_1671", "Port" : "sbox"}]},
+			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "15", "SubInstance" : "grp_haraka512_perm_fu_1671", "Port" : "rc"}]}]},
+	{"ID" : "12", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.buf_U", "Parent" : "11"},
+	{"ID" : "13", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.outbuf_U", "Parent" : "11"},
+	{"ID" : "14", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.buf_tmp_U", "Parent" : "11"},
+	{"ID" : "15", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671", "Parent" : "11", "Child" : ["16", "17", "18", "20", "22", "24", "26", "28"],
+		"CDFG" : "haraka512_perm",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "3784", "EstimateLatencyMax" : "3784",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"WaitState" : [
+			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_168"},
+			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_168"},
+			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_168"},
+			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_168"},
+			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_183"},
+			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_183"},
+			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_197"},
+			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_203"},
+			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_203"},
+			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_203"},
+			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_215"},
+			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_221"}],
+		"Port" : [
+			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
+			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "18", "SubInstance" : "grp_aesenc_fu_168", "Port" : "sbox"}]},
+			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "18", "SubInstance" : "grp_aesenc_fu_168", "Port" : "rk"}]}]},
+	{"ID" : "16", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.s_U", "Parent" : "15"},
+	{"ID" : "17", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.tmp_U", "Parent" : "15"},
+	{"ID" : "18", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_aesenc_fu_168", "Parent" : "15", "Child" : ["19"],
+		"CDFG" : "aesenc",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "15", "EstimateLatencyMax" : "15",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "s", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "s_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
+			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "19", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_aesenc_fu_168.sbox_U", "Parent" : "18"},
+	{"ID" : "20", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpacklo32_2_fu_183", "Parent" : "15", "Child" : ["21"],
+		"CDFG" : "unpacklo32_2",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "a", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
+	{"ID" : "21", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpacklo32_2_fu_183.tmp_U", "Parent" : "20"},
+	{"ID" : "22", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpacklo32_1_fu_197", "Parent" : "15", "Child" : ["23"],
+		"CDFG" : "unpacklo32_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
+			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "23", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpacklo32_1_fu_197.tmp_U", "Parent" : "22"},
+	{"ID" : "24", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpackhi32_1_fu_203", "Parent" : "15", "Child" : ["25"],
+		"CDFG" : "unpackhi32_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
+	{"ID" : "25", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpackhi32_1_fu_203.tmp_U", "Parent" : "24"},
+	{"ID" : "26", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpackhi32_fu_215", "Parent" : "15", "Child" : ["27"],
+		"CDFG" : "unpackhi32",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "27", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpackhi32_fu_215.tmp_U", "Parent" : "26"},
+	{"ID" : "28", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpacklo32_fu_221", "Parent" : "15", "Child" : ["29"],
+		"CDFG" : "unpacklo32",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "29", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_fu_376.grp_haraka512_perm_fu_1671.grp_unpacklo32_fu_221.tmp_U", "Parent" : "28"},
+	{"ID" : "30", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387", "Parent" : "7", "Child" : ["31", "32"],
 		"CDFG" : "thash_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -255,22 +502,22 @@ set RtlHierarchyInfo {[
 		"InDataflowNetwork" : "0",
 		"HasNonBlockingOperation" : "0",
 		"WaitState" : [
-			{"State" : "ap_ST_fsm_state7", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka_S_2_fu_161"}],
+			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka_S_2_fu_190"}],
 		"Port" : [
 			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O",
 				"SubConnect" : [
-					{"ID" : "14", "SubInstance" : "grp_haraka_S_2_fu_161", "Port" : "out_r"}]},
+					{"ID" : "32", "SubInstance" : "grp_haraka_S_2_fu_190", "Port" : "out_r"}]},
 			{"Name" : "out_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "addr", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "14", "SubInstance" : "grp_haraka_S_2_fu_161", "Port" : "sbox"}]},
+					{"ID" : "32", "SubInstance" : "grp_haraka_S_2_fu_190", "Port" : "sbox"}]},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "14", "SubInstance" : "grp_haraka_S_2_fu_161", "Port" : "rc"}]}]},
-	{"ID" : "13", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.buf_U", "Parent" : "12"},
-	{"ID" : "14", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161", "Parent" : "12", "Child" : ["15", "16", "17", "35"],
+					{"ID" : "32", "SubInstance" : "grp_haraka_S_2_fu_190", "Port" : "rc"}]}]},
+	{"ID" : "31", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.buf_U", "Parent" : "30"},
+	{"ID" : "32", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190", "Parent" : "30", "Child" : ["33", "34", "35", "36"],
 		"CDFG" : "haraka_S_2",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -284,820 +531,65 @@ set RtlHierarchyInfo {[
 		"InDataflowNetwork" : "0",
 		"HasNonBlockingOperation" : "0",
 		"WaitState" : [
-			{"State" : "ap_ST_fsm_state3", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka_S_absorb_fu_188"},
-			{"State" : "ap_ST_fsm_state5", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_200"}],
+			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_329"},
+			{"State" : "ap_ST_fsm_state14", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_329"}],
 		"Port" : [
 			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
 			{"Name" : "out_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "17", "SubInstance" : "grp_haraka_S_absorb_fu_188", "Port" : "m"}]},
-			{"Name" : "inlen", "Type" : "None", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "35", "SubInstance" : "grp_haraka512_perm_1_fu_200", "Port" : "sbox"},
-					{"ID" : "17", "SubInstance" : "grp_haraka_S_absorb_fu_188", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "35", "SubInstance" : "grp_haraka512_perm_1_fu_200", "Port" : "rc"},
-					{"ID" : "17", "SubInstance" : "grp_haraka_S_absorb_fu_188", "Port" : "rc"}]}]},
-	{"ID" : "15", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.s_U", "Parent" : "14"},
-	{"ID" : "16", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.h_assign_U", "Parent" : "14"},
-	{"ID" : "17", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188", "Parent" : "14", "Child" : ["18", "19"],
-		"CDFG" : "haraka_S_absorb",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "-1", "EstimateLatencyMax" : "-1",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state5", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_219"}],
-		"Port" : [
-			{"Name" : "s", "Type" : "Memory", "Direction" : "IO",
-				"SubConnect" : [
-					{"ID" : "19", "SubInstance" : "grp_haraka512_perm_1_fu_219", "Port" : "out_r"}]},
-			{"Name" : "m", "Type" : "Memory", "Direction" : "I"},
-			{"Name" : "mlen", "Type" : "None", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "19", "SubInstance" : "grp_haraka512_perm_1_fu_219", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "19", "SubInstance" : "grp_haraka512_perm_1_fu_219", "Port" : "rc"}]}]},
-	{"ID" : "18", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.empty_U", "Parent" : "17"},
-	{"ID" : "19", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219", "Parent" : "17", "Child" : ["20", "21", "22", "25", "27", "29", "31", "33"],
-		"CDFG" : "haraka512_perm_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7144", "EstimateLatencyMax" : "7144",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_202"},
-			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_208"},
-			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_214"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "22", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "22", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
-	{"ID" : "20", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.s_U", "Parent" : "19"},
-	{"ID" : "21", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.tmp_U", "Parent" : "19"},
-	{"ID" : "22", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_aesenc_fu_161", "Parent" : "19", "Child" : ["23", "24"],
-		"CDFG" : "aesenc",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "99", "EstimateLatencyMax" : "99",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "s", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "s_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
-			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "23", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_aesenc_fu_161.sbox_U", "Parent" : "22"},
-	{"ID" : "24", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_aesenc_fu_161.v_U", "Parent" : "22"},
-	{"ID" : "25", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpackhi32_1_fu_176", "Parent" : "19", "Child" : ["26"],
-		"CDFG" : "unpackhi32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "26", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpackhi32_1_fu_176.tmp_U", "Parent" : "25"},
-	{"ID" : "27", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_2_fu_188", "Parent" : "19", "Child" : ["28"],
-		"CDFG" : "unpacklo32_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "28", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_2_fu_188.tmp_U", "Parent" : "27"},
-	{"ID" : "29", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_1_fu_202", "Parent" : "19", "Child" : ["30"],
-		"CDFG" : "unpacklo32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "30", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_1_fu_202.tmp_U", "Parent" : "29"},
-	{"ID" : "31", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpackhi32_fu_208", "Parent" : "19", "Child" : ["32"],
-		"CDFG" : "unpackhi32",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "32", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpackhi32_fu_208.tmp_U", "Parent" : "31"},
-	{"ID" : "33", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_fu_214", "Parent" : "19", "Child" : ["34"],
-		"CDFG" : "unpacklo32",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "34", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_fu_214.tmp_U", "Parent" : "33"},
-	{"ID" : "35", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200", "Parent" : "14", "Child" : ["36", "37", "38", "41", "43", "45", "47", "49"],
-		"CDFG" : "haraka512_perm_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7144", "EstimateLatencyMax" : "7144",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_202"},
-			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_208"},
-			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_214"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "38", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "38", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
-	{"ID" : "36", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.s_U", "Parent" : "35"},
-	{"ID" : "37", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.tmp_U", "Parent" : "35"},
-	{"ID" : "38", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_aesenc_fu_161", "Parent" : "35", "Child" : ["39", "40"],
-		"CDFG" : "aesenc",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "99", "EstimateLatencyMax" : "99",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "s", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "s_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
-			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "39", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_aesenc_fu_161.sbox_U", "Parent" : "38"},
-	{"ID" : "40", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_aesenc_fu_161.v_U", "Parent" : "38"},
-	{"ID" : "41", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpackhi32_1_fu_176", "Parent" : "35", "Child" : ["42"],
-		"CDFG" : "unpackhi32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "42", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpackhi32_1_fu_176.tmp_U", "Parent" : "41"},
-	{"ID" : "43", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpacklo32_2_fu_188", "Parent" : "35", "Child" : ["44"],
-		"CDFG" : "unpacklo32_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "44", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpacklo32_2_fu_188.tmp_U", "Parent" : "43"},
-	{"ID" : "45", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpacklo32_1_fu_202", "Parent" : "35", "Child" : ["46"],
-		"CDFG" : "unpacklo32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "46", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpacklo32_1_fu_202.tmp_U", "Parent" : "45"},
-	{"ID" : "47", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpackhi32_fu_208", "Parent" : "35", "Child" : ["48"],
-		"CDFG" : "unpackhi32",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "48", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpackhi32_fu_208.tmp_U", "Parent" : "47"},
-	{"ID" : "49", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpacklo32_fu_214", "Parent" : "35", "Child" : ["50"],
-		"CDFG" : "unpacklo32",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "50", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_1_fu_484.grp_haraka_S_2_fu_161.grp_haraka512_perm_1_fu_200.grp_unpacklo32_fu_214.tmp_U", "Parent" : "49"},
-	{"ID" : "51", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496", "Parent" : "7", "Child" : ["52", "53"],
-		"CDFG" : "thash_170",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "-1", "EstimateLatencyMax" : "-1",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state7", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka_S_2_fu_157"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO",
-				"SubConnect" : [
-					{"ID" : "53", "SubInstance" : "grp_haraka_S_2_fu_157", "Port" : "out_r"}]},
-			{"Name" : "in_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "addr", "Type" : "Memory", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "53", "SubInstance" : "grp_haraka_S_2_fu_157", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "53", "SubInstance" : "grp_haraka_S_2_fu_157", "Port" : "rc"}]}]},
-	{"ID" : "52", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.buf_U", "Parent" : "51"},
-	{"ID" : "53", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157", "Parent" : "51", "Child" : ["54", "55", "56", "74"],
-		"CDFG" : "haraka_S_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "-1", "EstimateLatencyMax" : "-1",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state3", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka_S_absorb_fu_188"},
-			{"State" : "ap_ST_fsm_state5", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_200"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "out_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "56", "SubInstance" : "grp_haraka_S_absorb_fu_188", "Port" : "m"}]},
-			{"Name" : "inlen", "Type" : "None", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "74", "SubInstance" : "grp_haraka512_perm_1_fu_200", "Port" : "sbox"},
-					{"ID" : "56", "SubInstance" : "grp_haraka_S_absorb_fu_188", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "74", "SubInstance" : "grp_haraka512_perm_1_fu_200", "Port" : "rc"},
-					{"ID" : "56", "SubInstance" : "grp_haraka_S_absorb_fu_188", "Port" : "rc"}]}]},
-	{"ID" : "54", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.s_U", "Parent" : "53"},
-	{"ID" : "55", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.h_assign_U", "Parent" : "53"},
-	{"ID" : "56", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188", "Parent" : "53", "Child" : ["57", "58"],
-		"CDFG" : "haraka_S_absorb",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "-1", "EstimateLatencyMax" : "-1",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state5", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_219"}],
-		"Port" : [
-			{"Name" : "s", "Type" : "Memory", "Direction" : "IO",
-				"SubConnect" : [
-					{"ID" : "58", "SubInstance" : "grp_haraka512_perm_1_fu_219", "Port" : "out_r"}]},
-			{"Name" : "m", "Type" : "Memory", "Direction" : "I"},
-			{"Name" : "mlen", "Type" : "None", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "58", "SubInstance" : "grp_haraka512_perm_1_fu_219", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "58", "SubInstance" : "grp_haraka512_perm_1_fu_219", "Port" : "rc"}]}]},
-	{"ID" : "57", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.empty_U", "Parent" : "56"},
-	{"ID" : "58", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219", "Parent" : "56", "Child" : ["59", "60", "61", "64", "66", "68", "70", "72"],
-		"CDFG" : "haraka512_perm_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7144", "EstimateLatencyMax" : "7144",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_202"},
-			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_208"},
-			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_214"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "61", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "61", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
-	{"ID" : "59", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.s_U", "Parent" : "58"},
-	{"ID" : "60", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.tmp_U", "Parent" : "58"},
-	{"ID" : "61", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_aesenc_fu_161", "Parent" : "58", "Child" : ["62", "63"],
-		"CDFG" : "aesenc",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "99", "EstimateLatencyMax" : "99",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "s", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "s_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
-			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "62", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_aesenc_fu_161.sbox_U", "Parent" : "61"},
-	{"ID" : "63", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_aesenc_fu_161.v_U", "Parent" : "61"},
-	{"ID" : "64", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpackhi32_1_fu_176", "Parent" : "58", "Child" : ["65"],
-		"CDFG" : "unpackhi32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "65", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpackhi32_1_fu_176.tmp_U", "Parent" : "64"},
-	{"ID" : "66", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_2_fu_188", "Parent" : "58", "Child" : ["67"],
-		"CDFG" : "unpacklo32_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "67", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_2_fu_188.tmp_U", "Parent" : "66"},
-	{"ID" : "68", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_1_fu_202", "Parent" : "58", "Child" : ["69"],
-		"CDFG" : "unpacklo32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "69", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_1_fu_202.tmp_U", "Parent" : "68"},
-	{"ID" : "70", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpackhi32_fu_208", "Parent" : "58", "Child" : ["71"],
-		"CDFG" : "unpackhi32",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "71", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpackhi32_fu_208.tmp_U", "Parent" : "70"},
-	{"ID" : "72", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_fu_214", "Parent" : "58", "Child" : ["73"],
-		"CDFG" : "unpacklo32",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "73", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka_S_absorb_fu_188.grp_haraka512_perm_1_fu_219.grp_unpacklo32_fu_214.tmp_U", "Parent" : "72"},
-	{"ID" : "74", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200", "Parent" : "53", "Child" : ["75", "76", "77", "80", "82", "84", "86", "88"],
-		"CDFG" : "haraka512_perm_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7144", "EstimateLatencyMax" : "7144",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_202"},
-			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_208"},
-			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_214"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "77", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "77", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
-	{"ID" : "75", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.s_U", "Parent" : "74"},
-	{"ID" : "76", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.tmp_U", "Parent" : "74"},
-	{"ID" : "77", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_aesenc_fu_161", "Parent" : "74", "Child" : ["78", "79"],
-		"CDFG" : "aesenc",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "99", "EstimateLatencyMax" : "99",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "s", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "s_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
-			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "78", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_aesenc_fu_161.sbox_U", "Parent" : "77"},
-	{"ID" : "79", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_aesenc_fu_161.v_U", "Parent" : "77"},
-	{"ID" : "80", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpackhi32_1_fu_176", "Parent" : "74", "Child" : ["81"],
-		"CDFG" : "unpackhi32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "81", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpackhi32_1_fu_176.tmp_U", "Parent" : "80"},
-	{"ID" : "82", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpacklo32_2_fu_188", "Parent" : "74", "Child" : ["83"],
-		"CDFG" : "unpacklo32_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "83", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpacklo32_2_fu_188.tmp_U", "Parent" : "82"},
-	{"ID" : "84", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpacklo32_1_fu_202", "Parent" : "74", "Child" : ["85"],
-		"CDFG" : "unpacklo32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "85", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpacklo32_1_fu_202.tmp_U", "Parent" : "84"},
-	{"ID" : "86", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpackhi32_fu_208", "Parent" : "74", "Child" : ["87"],
-		"CDFG" : "unpackhi32",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "87", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpackhi32_fu_208.tmp_U", "Parent" : "86"},
-	{"ID" : "88", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpacklo32_fu_214", "Parent" : "74", "Child" : ["89"],
-		"CDFG" : "unpacklo32",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "89", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_170_fu_496.grp_haraka_S_2_fu_157.grp_haraka512_perm_1_fu_200.grp_unpacklo32_fu_214.tmp_U", "Parent" : "88"},
-	{"ID" : "90", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508", "Parent" : "7", "Child" : ["91", "92", "93"],
-		"CDFG" : "thash",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7531", "EstimateLatencyMax" : "7531",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_fu_224"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "in_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "addr", "Type" : "Memory", "Direction" : "I"},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "93", "SubInstance" : "grp_haraka512_fu_224", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "93", "SubInstance" : "grp_haraka512_fu_224", "Port" : "rc"}]}]},
-	{"ID" : "91", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.outbuf_U", "Parent" : "90"},
-	{"ID" : "92", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.buf_tmp_U", "Parent" : "90"},
-	{"ID" : "93", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224", "Parent" : "90", "Child" : ["94", "95"],
-		"CDFG" : "haraka512",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7342", "EstimateLatencyMax" : "7342",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state2", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_fu_193"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "95", "SubInstance" : "grp_haraka512_perm_fu_193", "Port" : "in_r"}]},
-			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "95", "SubInstance" : "grp_haraka512_perm_fu_193", "Port" : "sbox"}]},
-			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "95", "SubInstance" : "grp_haraka512_perm_fu_193", "Port" : "rc"}]}]},
-	{"ID" : "94", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.buf_U", "Parent" : "93"},
-	{"ID" : "95", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193", "Parent" : "93", "Child" : ["96", "97", "98", "101", "103", "105", "107", "109"],
-		"CDFG" : "haraka512_perm",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7144", "EstimateLatencyMax" : "7144",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"WaitState" : [
-			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_168"},
-			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_168"},
-			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_168"},
-			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_168"},
-			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_183"},
-			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_183"},
-			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_183"},
-			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_195"},
-			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_195"},
-			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_209"},
-			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_215"},
-			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_221"}],
-		"Port" : [
-			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
 			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I"},
+			{"Name" : "inlen", "Type" : "None", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "98", "SubInstance" : "grp_aesenc_fu_168", "Port" : "sbox"}]},
+					{"ID" : "36", "SubInstance" : "grp_haraka512_perm_1_fu_329", "Port" : "sbox"}]},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "98", "SubInstance" : "grp_aesenc_fu_168", "Port" : "rk"}]}]},
-	{"ID" : "96", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.s_U", "Parent" : "95"},
-	{"ID" : "97", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.tmp_U", "Parent" : "95"},
-	{"ID" : "98", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_aesenc_fu_168", "Parent" : "95", "Child" : ["99", "100"],
+					{"ID" : "36", "SubInstance" : "grp_haraka512_perm_1_fu_329", "Port" : "rc"}]}]},
+	{"ID" : "33", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.empty_U", "Parent" : "32"},
+	{"ID" : "34", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.s_U", "Parent" : "32"},
+	{"ID" : "35", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.d_U", "Parent" : "32"},
+	{"ID" : "36", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329", "Parent" : "32", "Child" : ["37", "38", "39", "41", "43", "45", "47", "49"],
+		"CDFG" : "haraka512_perm_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "3784", "EstimateLatencyMax" : "3784",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"WaitState" : [
+			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
+			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
+			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
+			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
+			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_176"},
+			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_176"},
+			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_190"},
+			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_208"},
+			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_214"}],
+		"Port" : [
+			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "39", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
+			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "39", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
+	{"ID" : "37", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.s_U", "Parent" : "36"},
+	{"ID" : "38", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.tmp_U", "Parent" : "36"},
+	{"ID" : "39", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_aesenc_fu_161", "Parent" : "36", "Child" : ["40"],
 		"CDFG" : "aesenc",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "99", "EstimateLatencyMax" : "99",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "15", "EstimateLatencyMax" : "15",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1110,9 +602,44 @@ set RtlHierarchyInfo {[
 			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "99", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_aesenc_fu_168.sbox_U", "Parent" : "98"},
-	{"ID" : "100", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_aesenc_fu_168.v_U", "Parent" : "98"},
-	{"ID" : "101", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpackhi32_1_fu_183", "Parent" : "95", "Child" : ["102"],
+	{"ID" : "40", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_aesenc_fu_161.sbox_U", "Parent" : "39"},
+	{"ID" : "41", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_2_fu_176", "Parent" : "36", "Child" : ["42"],
+		"CDFG" : "unpacklo32_2",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "a", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
+	{"ID" : "42", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_2_fu_176.tmp_U", "Parent" : "41"},
+	{"ID" : "43", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_1_fu_190", "Parent" : "36", "Child" : ["44"],
+		"CDFG" : "unpacklo32_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
+			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "44", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_1_fu_190.tmp_U", "Parent" : "43"},
+	{"ID" : "45", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpackhi32_1_fu_196", "Parent" : "36", "Child" : ["46"],
 		"CDFG" : "unpackhi32_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1129,44 +656,8 @@ set RtlHierarchyInfo {[
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "102", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpackhi32_1_fu_183.tmp_U", "Parent" : "101"},
-	{"ID" : "103", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpacklo32_2_fu_195", "Parent" : "95", "Child" : ["104"],
-		"CDFG" : "unpacklo32_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "104", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpacklo32_2_fu_195.tmp_U", "Parent" : "103"},
-	{"ID" : "105", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpacklo32_1_fu_209", "Parent" : "95", "Child" : ["106"],
-		"CDFG" : "unpacklo32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "106", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpacklo32_1_fu_209.tmp_U", "Parent" : "105"},
-	{"ID" : "107", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpackhi32_fu_215", "Parent" : "95", "Child" : ["108"],
+	{"ID" : "46", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpackhi32_1_fu_196.tmp_U", "Parent" : "45"},
+	{"ID" : "47", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpackhi32_fu_208", "Parent" : "36", "Child" : ["48"],
 		"CDFG" : "unpackhi32",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1182,8 +673,8 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "108", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpackhi32_fu_215.tmp_U", "Parent" : "107"},
-	{"ID" : "109", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpacklo32_fu_221", "Parent" : "95", "Child" : ["110"],
+	{"ID" : "48", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpackhi32_fu_208.tmp_U", "Parent" : "47"},
+	{"ID" : "49", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_fu_214", "Parent" : "36", "Child" : ["50"],
 		"CDFG" : "unpacklo32",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1199,14 +690,14 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "110", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_thash_fu_508.grp_haraka512_fu_224.grp_haraka512_perm_fu_193.grp_unpacklo32_fu_221.tmp_U", "Parent" : "109"},
-	{"ID" : "111", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519", "Parent" : "7", "Child" : ["112", "113", "114"],
+	{"ID" : "50", "Level" : "8", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_thash_1_fu_387.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_fu_214.tmp_U", "Parent" : "49"},
+	{"ID" : "51", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400", "Parent" : "7", "Child" : ["52", "53", "54"],
 		"CDFG" : "prf_addr",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "3122", "EstimateLatencyMax" : "3122",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "1442", "EstimateLatencyMax" : "1442",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1221,19 +712,19 @@ set RtlHierarchyInfo {[
 			{"Name" : "addr", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "114", "SubInstance" : "grp_haraka256_sk_fu_163", "Port" : "sbox"}]},
+					{"ID" : "54", "SubInstance" : "grp_haraka256_sk_fu_163", "Port" : "sbox"}]},
 			{"Name" : "rc_sseed", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "114", "SubInstance" : "grp_haraka256_sk_fu_163", "Port" : "rc_sseed"}]}]},
-	{"ID" : "112", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.buf_U", "Parent" : "111"},
-	{"ID" : "113", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.outbuf_U", "Parent" : "111"},
-	{"ID" : "114", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163", "Parent" : "111", "Child" : ["115", "116", "117", "120", "122"],
+					{"ID" : "54", "SubInstance" : "grp_haraka256_sk_fu_163", "Port" : "rc_sseed"}]}]},
+	{"ID" : "52", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.buf_U", "Parent" : "51"},
+	{"ID" : "53", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.outbuf_U", "Parent" : "51"},
+	{"ID" : "54", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163", "Parent" : "51", "Child" : ["55", "56", "57", "59", "61"],
 		"CDFG" : "haraka256_sk",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "3031", "EstimateLatencyMax" : "3031",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "1351", "EstimateLatencyMax" : "1351",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1241,28 +732,28 @@ set RtlHierarchyInfo {[
 		"InDataflowNetwork" : "0",
 		"HasNonBlockingOperation" : "0",
 		"WaitState" : [
-			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_1_fu_201"},
-			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_1_fu_201"},
-			{"State" : "ap_ST_fsm_state9", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_292_fu_214"},
-			{"State" : "ap_ST_fsm_state11", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_1_fu_220"}],
+			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_1_fu_198"},
+			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_1_fu_198"},
+			{"State" : "ap_ST_fsm_state9", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_279_fu_211"},
+			{"State" : "ap_ST_fsm_state11", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_1_fu_217"}],
 		"Port" : [
 			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
 			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "117", "SubInstance" : "grp_aesenc_1_fu_201", "Port" : "sbox"}]},
+					{"ID" : "57", "SubInstance" : "grp_aesenc_1_fu_198", "Port" : "sbox"}]},
 			{"Name" : "rc_sseed", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "117", "SubInstance" : "grp_aesenc_1_fu_201", "Port" : "rk"}]}]},
-	{"ID" : "115", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.s_U", "Parent" : "114"},
-	{"ID" : "116", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.tmp_U", "Parent" : "114"},
-	{"ID" : "117", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.grp_aesenc_1_fu_201", "Parent" : "114", "Child" : ["118", "119"],
+					{"ID" : "57", "SubInstance" : "grp_aesenc_1_fu_198", "Port" : "rk"}]}]},
+	{"ID" : "55", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163.s_U", "Parent" : "54"},
+	{"ID" : "56", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163.tmp_U", "Parent" : "54"},
+	{"ID" : "57", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163.grp_aesenc_1_fu_198", "Parent" : "54", "Child" : ["58"],
 		"CDFG" : "aesenc_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "99", "EstimateLatencyMax" : "99",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "15", "EstimateLatencyMax" : "15",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1275,10 +766,9 @@ set RtlHierarchyInfo {[
 			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "118", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.grp_aesenc_1_fu_201.sbox_U", "Parent" : "117"},
-	{"ID" : "119", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.grp_aesenc_1_fu_201.v_U", "Parent" : "117"},
-	{"ID" : "120", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.grp_unpacklo32_292_fu_214", "Parent" : "114", "Child" : ["121"],
-		"CDFG" : "unpacklo32_292",
+	{"ID" : "58", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163.grp_aesenc_1_fu_198.sbox_U", "Parent" : "57"},
+	{"ID" : "59", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163.grp_unpacklo32_279_fu_211", "Parent" : "54", "Child" : ["60"],
+		"CDFG" : "unpacklo32_279",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
@@ -1292,9 +782,9 @@ set RtlHierarchyInfo {[
 		"HasNonBlockingOperation" : "0",
 		"Port" : [
 			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "121", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.grp_unpacklo32_292_fu_214.tmp_U", "Parent" : "120"},
-	{"ID" : "122", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.grp_unpackhi32_1_1_fu_220", "Parent" : "114", "Child" : ["123"],
+			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "60", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163.grp_unpacklo32_279_fu_211.tmp_U", "Parent" : "59"},
+	{"ID" : "61", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163.grp_unpackhi32_1_1_fu_217", "Parent" : "54", "Child" : ["62"],
 		"CDFG" : "unpackhi32_1_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1309,16 +799,218 @@ set RtlHierarchyInfo {[
 		"HasNonBlockingOperation" : "0",
 		"Port" : [
 			{"Name" : "a", "Type" : "Memory", "Direction" : "IO"}]},
-	{"ID" : "123", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.grp_prf_addr_fu_519.grp_haraka256_sk_fu_163.grp_unpackhi32_1_1_fu_220.tmp_U", "Parent" : "122"},
-	{"ID" : "124", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.crypto_sign_keypair_mux_42_32_1_1_U112", "Parent" : "7"},
-	{"ID" : "125", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_fu_217.crypto_sign_keypair_mux_42_32_1_1_U113", "Parent" : "7"},
-	{"ID" : "126", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231", "Parent" : "2", "Child" : ["127", "128", "129", "149"],
+	{"ID" : "62", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_wots_gen_leaf_fu_222.grp_prf_addr_fu_400.grp_haraka256_sk_fu_163.grp_unpackhi32_1_1_fu_217.tmp_U", "Parent" : "61"},
+	{"ID" : "63", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238", "Parent" : "5", "Child" : ["64", "65"],
+		"CDFG" : "thash_160",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "-1", "EstimateLatencyMax" : "-1",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"WaitState" : [
+			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka_S_2_fu_190"}],
+		"Port" : [
+			{"Name" : "in_r", "Type" : "Memory", "Direction" : "IO",
+				"SubConnect" : [
+					{"ID" : "65", "SubInstance" : "grp_haraka_S_2_fu_190", "Port" : "out_r"}]},
+			{"Name" : "in_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "addr", "Type" : "Memory", "Direction" : "I"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "65", "SubInstance" : "grp_haraka_S_2_fu_190", "Port" : "sbox"}]},
+			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "65", "SubInstance" : "grp_haraka_S_2_fu_190", "Port" : "rc"}]}]},
+	{"ID" : "64", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.buf_U", "Parent" : "63"},
+	{"ID" : "65", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190", "Parent" : "63", "Child" : ["66", "67", "68", "69"],
+		"CDFG" : "haraka_S_2",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "-1", "EstimateLatencyMax" : "-1",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"WaitState" : [
+			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_329"},
+			{"State" : "ap_ST_fsm_state14", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_329"}],
+		"Port" : [
+			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
+			{"Name" : "out_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I"},
+			{"Name" : "inlen", "Type" : "None", "Direction" : "I"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "69", "SubInstance" : "grp_haraka512_perm_1_fu_329", "Port" : "sbox"}]},
+			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "69", "SubInstance" : "grp_haraka512_perm_1_fu_329", "Port" : "rc"}]}]},
+	{"ID" : "66", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.empty_U", "Parent" : "65"},
+	{"ID" : "67", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.s_U", "Parent" : "65"},
+	{"ID" : "68", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.d_U", "Parent" : "65"},
+	{"ID" : "69", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329", "Parent" : "65", "Child" : ["70", "71", "72", "74", "76", "78", "80", "82"],
+		"CDFG" : "haraka512_perm_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "3784", "EstimateLatencyMax" : "3784",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"WaitState" : [
+			{"State" : "ap_ST_fsm_state6", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
+			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
+			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
+			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
+			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_176"},
+			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_176"},
+			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_190"},
+			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_208"},
+			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_214"}],
+		"Port" : [
+			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "72", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
+			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
+				"SubConnect" : [
+					{"ID" : "72", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
+	{"ID" : "70", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.s_U", "Parent" : "69"},
+	{"ID" : "71", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.tmp_U", "Parent" : "69"},
+	{"ID" : "72", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_aesenc_fu_161", "Parent" : "69", "Child" : ["73"],
+		"CDFG" : "aesenc",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "15", "EstimateLatencyMax" : "15",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "s", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "s_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
+			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "73", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_aesenc_fu_161.sbox_U", "Parent" : "72"},
+	{"ID" : "74", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_2_fu_176", "Parent" : "69", "Child" : ["75"],
+		"CDFG" : "unpacklo32_2",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "a", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
+	{"ID" : "75", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_2_fu_176.tmp_U", "Parent" : "74"},
+	{"ID" : "76", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_1_fu_190", "Parent" : "69", "Child" : ["77"],
+		"CDFG" : "unpacklo32_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
+			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "77", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_1_fu_190.tmp_U", "Parent" : "76"},
+	{"ID" : "78", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpackhi32_1_fu_196", "Parent" : "69", "Child" : ["79"],
+		"CDFG" : "unpackhi32_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
+	{"ID" : "79", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpackhi32_1_fu_196.tmp_U", "Parent" : "78"},
+	{"ID" : "80", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpackhi32_fu_208", "Parent" : "69", "Child" : ["81"],
+		"CDFG" : "unpackhi32",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "81", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpackhi32_fu_208.tmp_U", "Parent" : "80"},
+	{"ID" : "82", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_fu_214", "Parent" : "69", "Child" : ["83"],
+		"CDFG" : "unpacklo32",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "83", "Level" : "7", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.grp_thash_160_fu_238.grp_haraka_S_2_fu_190.grp_haraka512_perm_1_fu_329.grp_unpacklo32_fu_214.tmp_U", "Parent" : "82"},
+	{"ID" : "84", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.crypto_sign_keypaibs_U114", "Parent" : "5"},
+	{"ID" : "85", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_treehash_wots_fu_217.crypto_sign_keypaibs_U115", "Parent" : "5"},
+	{"ID" : "86", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231", "Parent" : "2", "Child" : ["87", "88", "89", "107"],
 		"CDFG" : "tweak_constants",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "292923", "EstimateLatencyMax" : "292923",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "158521", "EstimateLatencyMax" : "158521",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1331,29 +1023,29 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "pk_seed", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "149", "SubInstance" : "grp_haraka_S_fu_192", "Port" : "in_r"}]},
+					{"ID" : "107", "SubInstance" : "grp_haraka_S_fu_192", "Port" : "in_r"}]},
 			{"Name" : "sk_seed", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "129", "SubInstance" : "grp_haraka_S_1_fu_181", "Port" : "in_r"}]},
+					{"ID" : "89", "SubInstance" : "grp_haraka_S_1_fu_181", "Port" : "in_r"}]},
 			{"Name" : "haraka_rc", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "129", "SubInstance" : "grp_haraka_S_1_fu_181", "Port" : "rc"},
-					{"ID" : "149", "SubInstance" : "grp_haraka_S_fu_192", "Port" : "rc"}]},
+					{"ID" : "89", "SubInstance" : "grp_haraka_S_1_fu_181", "Port" : "rc"},
+					{"ID" : "107", "SubInstance" : "grp_haraka_S_fu_192", "Port" : "rc"}]},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "129", "SubInstance" : "grp_haraka_S_1_fu_181", "Port" : "sbox"},
-					{"ID" : "149", "SubInstance" : "grp_haraka_S_fu_192", "Port" : "sbox"}]},
+					{"ID" : "89", "SubInstance" : "grp_haraka_S_1_fu_181", "Port" : "sbox"},
+					{"ID" : "107", "SubInstance" : "grp_haraka_S_fu_192", "Port" : "sbox"}]},
 			{"Name" : "rc_sseed", "Type" : "Memory", "Direction" : "O"}]},
-	{"ID" : "127", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.haraka_rc_U", "Parent" : "126"},
-	{"ID" : "128", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.buf_U", "Parent" : "126"},
-	{"ID" : "129", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181", "Parent" : "126", "Child" : ["130", "131", "147"],
+	{"ID" : "87", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.haraka_rc_U", "Parent" : "86"},
+	{"ID" : "88", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.buf_U", "Parent" : "86"},
+	{"ID" : "89", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181", "Parent" : "86", "Child" : ["90", "91", "92"],
 		"CDFG" : "haraka_S_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "144419", "EstimateLatencyMax" : "144419",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "77218", "EstimateLatencyMax" : "77218",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1361,27 +1053,25 @@ set RtlHierarchyInfo {[
 		"InDataflowNetwork" : "0",
 		"HasNonBlockingOperation" : "0",
 		"WaitState" : [
-			{"State" : "ap_ST_fsm_state5", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_132"},
-			{"State" : "ap_ST_fsm_state3", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka_S_absorb_1_fu_141"}],
+			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_248"}],
 		"Port" : [
 			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "147", "SubInstance" : "grp_haraka_S_absorb_1_fu_141", "Port" : "m"}]},
+			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "131", "SubInstance" : "grp_haraka512_perm_1_fu_132", "Port" : "sbox"}]},
+					{"ID" : "92", "SubInstance" : "grp_haraka512_perm_1_fu_248", "Port" : "sbox"}]},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "131", "SubInstance" : "grp_haraka512_perm_1_fu_132", "Port" : "rc"}]}]},
-	{"ID" : "130", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.s_U", "Parent" : "129"},
-	{"ID" : "131", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132", "Parent" : "129", "Child" : ["132", "133", "134", "137", "139", "141", "143", "145"],
+					{"ID" : "92", "SubInstance" : "grp_haraka512_perm_1_fu_248", "Port" : "rc"}]}]},
+	{"ID" : "90", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.empty_U", "Parent" : "89"},
+	{"ID" : "91", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.s_U", "Parent" : "89"},
+	{"ID" : "92", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248", "Parent" : "89", "Child" : ["93", "94", "95", "97", "99", "101", "103", "105"],
 		"CDFG" : "haraka512_perm_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7144", "EstimateLatencyMax" : "7144",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "3784", "EstimateLatencyMax" : "3784",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1393,31 +1083,31 @@ set RtlHierarchyInfo {[
 			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
 			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
 			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_202"},
+			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_176"},
+			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_176"},
+			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_190"},
+			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
 			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_208"},
 			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_214"}],
 		"Port" : [
 			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "134", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
+					{"ID" : "95", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "134", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
-	{"ID" : "132", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.s_U", "Parent" : "131"},
-	{"ID" : "133", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.tmp_U", "Parent" : "131"},
-	{"ID" : "134", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_aesenc_fu_161", "Parent" : "131", "Child" : ["135", "136"],
+					{"ID" : "95", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
+	{"ID" : "93", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.s_U", "Parent" : "92"},
+	{"ID" : "94", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.tmp_U", "Parent" : "92"},
+	{"ID" : "95", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_aesenc_fu_161", "Parent" : "92", "Child" : ["96"],
 		"CDFG" : "aesenc",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "99", "EstimateLatencyMax" : "99",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "15", "EstimateLatencyMax" : "15",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1430,9 +1120,44 @@ set RtlHierarchyInfo {[
 			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "135", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_aesenc_fu_161.sbox_U", "Parent" : "134"},
-	{"ID" : "136", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_aesenc_fu_161.v_U", "Parent" : "134"},
-	{"ID" : "137", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpackhi32_1_fu_176", "Parent" : "131", "Child" : ["138"],
+	{"ID" : "96", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_aesenc_fu_161.sbox_U", "Parent" : "95"},
+	{"ID" : "97", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpacklo32_2_fu_176", "Parent" : "92", "Child" : ["98"],
+		"CDFG" : "unpacklo32_2",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "a", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
+	{"ID" : "98", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpacklo32_2_fu_176.tmp_U", "Parent" : "97"},
+	{"ID" : "99", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpacklo32_1_fu_190", "Parent" : "92", "Child" : ["100"],
+		"CDFG" : "unpacklo32_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
+			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "100", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpacklo32_1_fu_190.tmp_U", "Parent" : "99"},
+	{"ID" : "101", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpackhi32_1_fu_196", "Parent" : "92", "Child" : ["102"],
 		"CDFG" : "unpackhi32_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1449,44 +1174,8 @@ set RtlHierarchyInfo {[
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "138", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpackhi32_1_fu_176.tmp_U", "Parent" : "137"},
-	{"ID" : "139", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpacklo32_2_fu_188", "Parent" : "131", "Child" : ["140"],
-		"CDFG" : "unpacklo32_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "140", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpacklo32_2_fu_188.tmp_U", "Parent" : "139"},
-	{"ID" : "141", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpacklo32_1_fu_202", "Parent" : "131", "Child" : ["142"],
-		"CDFG" : "unpacklo32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "142", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpacklo32_1_fu_202.tmp_U", "Parent" : "141"},
-	{"ID" : "143", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpackhi32_fu_208", "Parent" : "131", "Child" : ["144"],
+	{"ID" : "102", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpackhi32_1_fu_196.tmp_U", "Parent" : "101"},
+	{"ID" : "103", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpackhi32_fu_208", "Parent" : "92", "Child" : ["104"],
 		"CDFG" : "unpackhi32",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1502,8 +1191,8 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "144", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpackhi32_fu_208.tmp_U", "Parent" : "143"},
-	{"ID" : "145", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpacklo32_fu_214", "Parent" : "131", "Child" : ["146"],
+	{"ID" : "104", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpackhi32_fu_208.tmp_U", "Parent" : "103"},
+	{"ID" : "105", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpacklo32_fu_214", "Parent" : "92", "Child" : ["106"],
 		"CDFG" : "unpacklo32",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1519,31 +1208,14 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "146", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_132.grp_unpacklo32_fu_214.tmp_U", "Parent" : "145"},
-	{"ID" : "147", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka_S_absorb_1_fu_141", "Parent" : "129", "Child" : ["148"],
-		"CDFG" : "haraka_S_absorb_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "132", "EstimateLatencyMax" : "132",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "s", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "m", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "148", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka_S_absorb_1_fu_141.empty_U", "Parent" : "147"},
-	{"ID" : "149", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192", "Parent" : "126", "Child" : ["150", "151", "167"],
+	{"ID" : "106", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_1_fu_181.grp_haraka512_perm_1_fu_248.grp_unpacklo32_fu_214.tmp_U", "Parent" : "105"},
+	{"ID" : "107", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192", "Parent" : "86", "Child" : ["108", "109", "110"],
 		"CDFG" : "haraka_S",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "144419", "EstimateLatencyMax" : "144419",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "77218", "EstimateLatencyMax" : "77218",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1551,27 +1223,25 @@ set RtlHierarchyInfo {[
 		"InDataflowNetwork" : "0",
 		"HasNonBlockingOperation" : "0",
 		"WaitState" : [
-			{"State" : "ap_ST_fsm_state5", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_132"},
-			{"State" : "ap_ST_fsm_state3", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka_S_absorb_2_fu_141"}],
+			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_haraka512_perm_1_fu_248"}],
 		"Port" : [
 			{"Name" : "out_r", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I",
-				"SubConnect" : [
-					{"ID" : "167", "SubInstance" : "grp_haraka_S_absorb_2_fu_141", "Port" : "m"}]},
+			{"Name" : "in_r", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "151", "SubInstance" : "grp_haraka512_perm_1_fu_132", "Port" : "sbox"}]},
+					{"ID" : "110", "SubInstance" : "grp_haraka512_perm_1_fu_248", "Port" : "sbox"}]},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "151", "SubInstance" : "grp_haraka512_perm_1_fu_132", "Port" : "rc"}]}]},
-	{"ID" : "150", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.s_U", "Parent" : "149"},
-	{"ID" : "151", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132", "Parent" : "149", "Child" : ["152", "153", "154", "157", "159", "161", "163", "165"],
+					{"ID" : "110", "SubInstance" : "grp_haraka512_perm_1_fu_248", "Port" : "rc"}]}]},
+	{"ID" : "108", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.empty_U", "Parent" : "107"},
+	{"ID" : "109", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.s_U", "Parent" : "107"},
+	{"ID" : "110", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248", "Parent" : "107", "Child" : ["111", "112", "113", "115", "117", "119", "121", "123"],
 		"CDFG" : "haraka512_perm_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "7144", "EstimateLatencyMax" : "7144",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "3784", "EstimateLatencyMax" : "3784",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1583,31 +1253,31 @@ set RtlHierarchyInfo {[
 			{"State" : "ap_ST_fsm_state8", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
 			{"State" : "ap_ST_fsm_state10", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
 			{"State" : "ap_ST_fsm_state12", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_aesenc_fu_161"},
-			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_176"},
-			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_188"},
-			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_202"},
+			{"State" : "ap_ST_fsm_state17", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_176"},
+			{"State" : "ap_ST_fsm_state21", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_2_fu_176"},
+			{"State" : "ap_ST_fsm_state13", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_1_fu_190"},
+			{"State" : "ap_ST_fsm_state15", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state19", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
+			{"State" : "ap_ST_fsm_state23", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_1_fu_196"},
 			{"State" : "ap_ST_fsm_state25", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpackhi32_fu_208"},
 			{"State" : "ap_ST_fsm_state27", "FSM" : "ap_CS_fsm", "SubInstance" : "grp_unpacklo32_fu_214"}],
 		"Port" : [
 			{"Name" : "out_r", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "154", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
+					{"ID" : "113", "SubInstance" : "grp_aesenc_fu_161", "Port" : "sbox"}]},
 			{"Name" : "rc", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "154", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
-	{"ID" : "152", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.s_U", "Parent" : "151"},
-	{"ID" : "153", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.tmp_U", "Parent" : "151"},
-	{"ID" : "154", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_aesenc_fu_161", "Parent" : "151", "Child" : ["155", "156"],
+					{"ID" : "113", "SubInstance" : "grp_aesenc_fu_161", "Port" : "rk"}]}]},
+	{"ID" : "111", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.s_U", "Parent" : "110"},
+	{"ID" : "112", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.tmp_U", "Parent" : "110"},
+	{"ID" : "113", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_aesenc_fu_161", "Parent" : "110", "Child" : ["114"],
 		"CDFG" : "aesenc",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
 		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
 		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "99", "EstimateLatencyMax" : "99",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "15", "EstimateLatencyMax" : "15",
 		"Combinational" : "0",
 		"Datapath" : "0",
 		"ClockEnable" : "0",
@@ -1620,9 +1290,44 @@ set RtlHierarchyInfo {[
 			{"Name" : "rk", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "rk_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "sbox", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "155", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_aesenc_fu_161.sbox_U", "Parent" : "154"},
-	{"ID" : "156", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_aesenc_fu_161.v_U", "Parent" : "154"},
-	{"ID" : "157", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpackhi32_1_fu_176", "Parent" : "151", "Child" : ["158"],
+	{"ID" : "114", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_aesenc_fu_161.sbox_U", "Parent" : "113"},
+	{"ID" : "115", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpacklo32_2_fu_176", "Parent" : "110", "Child" : ["116"],
+		"CDFG" : "unpacklo32_2",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "a", "Type" : "Memory", "Direction" : "IO"},
+			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
+			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
+	{"ID" : "116", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpacklo32_2_fu_176.tmp_U", "Parent" : "115"},
+	{"ID" : "117", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpacklo32_1_fu_190", "Parent" : "110", "Child" : ["118"],
+		"CDFG" : "unpacklo32_1",
+		"Protocol" : "ap_ctrl_hs",
+		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
+		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
+		"II" : "0",
+		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
+		"Combinational" : "0",
+		"Datapath" : "0",
+		"ClockEnable" : "0",
+		"HasSubDataflow" : "0",
+		"InDataflowNetwork" : "0",
+		"HasNonBlockingOperation" : "0",
+		"Port" : [
+			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
+			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
+	{"ID" : "118", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpacklo32_1_fu_190.tmp_U", "Parent" : "117"},
+	{"ID" : "119", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpackhi32_1_fu_196", "Parent" : "110", "Child" : ["120"],
 		"CDFG" : "unpackhi32_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1639,44 +1344,8 @@ set RtlHierarchyInfo {[
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "158", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpackhi32_1_fu_176.tmp_U", "Parent" : "157"},
-	{"ID" : "159", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpacklo32_2_fu_188", "Parent" : "151", "Child" : ["160"],
-		"CDFG" : "unpacklo32_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "t_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "a_offset", "Type" : "None", "Direction" : "I"},
-			{"Name" : "b_offset", "Type" : "None", "Direction" : "I"}]},
-	{"ID" : "160", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpacklo32_2_fu_188.tmp_U", "Parent" : "159"},
-	{"ID" : "161", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpacklo32_1_fu_202", "Parent" : "151", "Child" : ["162"],
-		"CDFG" : "unpacklo32_1",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "69", "EstimateLatencyMax" : "69",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "t", "Type" : "Memory", "Direction" : "O"},
-			{"Name" : "a", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "162", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpacklo32_1_fu_202.tmp_U", "Parent" : "161"},
-	{"ID" : "163", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpackhi32_fu_208", "Parent" : "151", "Child" : ["164"],
+	{"ID" : "120", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpackhi32_1_fu_196.tmp_U", "Parent" : "119"},
+	{"ID" : "121", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpackhi32_fu_208", "Parent" : "110", "Child" : ["122"],
 		"CDFG" : "unpackhi32",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1692,8 +1361,8 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "164", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpackhi32_fu_208.tmp_U", "Parent" : "163"},
-	{"ID" : "165", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpacklo32_fu_214", "Parent" : "151", "Child" : ["166"],
+	{"ID" : "122", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpackhi32_fu_208.tmp_U", "Parent" : "121"},
+	{"ID" : "123", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpacklo32_fu_214", "Parent" : "110", "Child" : ["124"],
 		"CDFG" : "unpacklo32",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1709,25 +1378,8 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "t", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "b", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "166", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_132.grp_unpacklo32_fu_214.tmp_U", "Parent" : "165"},
-	{"ID" : "167", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka_S_absorb_2_fu_141", "Parent" : "149", "Child" : ["168"],
-		"CDFG" : "haraka_S_absorb_2",
-		"Protocol" : "ap_ctrl_hs",
-		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
-		"Pipeline" : "None", "UnalignedPipeline" : "0", "RewindPipeline" : "0", "ProcessNetwork" : "0",
-		"II" : "0",
-		"VariableLatency" : "1", "ExactLatency" : "-1", "EstimateLatencyMin" : "132", "EstimateLatencyMax" : "132",
-		"Combinational" : "0",
-		"Datapath" : "0",
-		"ClockEnable" : "0",
-		"HasSubDataflow" : "0",
-		"InDataflowNetwork" : "0",
-		"HasNonBlockingOperation" : "0",
-		"Port" : [
-			{"Name" : "s", "Type" : "Memory", "Direction" : "IO"},
-			{"Name" : "m", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "168", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka_S_absorb_2_fu_141.empty_U", "Parent" : "167"},
-	{"ID" : "169", "Level" : "1", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57", "Parent" : "0", "Child" : ["170", "171", "183"],
+	{"ID" : "124", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_crypto_sign_seed_key_fu_40.grp_tweak_constants_fu_231.grp_haraka_S_fu_192.grp_haraka512_perm_1_fu_248.grp_unpacklo32_fu_214.tmp_U", "Parent" : "123"},
+	{"ID" : "125", "Level" : "1", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57", "Parent" : "0", "Child" : ["126", "127", "139"],
 		"CDFG" : "randombytes",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1747,23 +1399,23 @@ set RtlHierarchyInfo {[
 			{"Name" : "x", "Type" : "Memory", "Direction" : "O"},
 			{"Name" : "DRBG_ctx_V", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "183", "SubInstance" : "grp_AES256_ECB_1_fu_189", "Port" : "ctr"},
-					{"ID" : "171", "SubInstance" : "grp_AES256_CTR_DRBG_Upda_fu_177", "Port" : "V"}]},
+					{"ID" : "127", "SubInstance" : "grp_AES256_CTR_DRBG_Upda_fu_177", "Port" : "V"},
+					{"ID" : "139", "SubInstance" : "grp_AES256_ECB_1_fu_189", "Port" : "ctr"}]},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "183", "SubInstance" : "grp_AES256_ECB_1_fu_189", "Port" : "sbox_1"},
-					{"ID" : "171", "SubInstance" : "grp_AES256_CTR_DRBG_Upda_fu_177", "Port" : "sbox_1"}]},
+					{"ID" : "127", "SubInstance" : "grp_AES256_CTR_DRBG_Upda_fu_177", "Port" : "sbox_1"},
+					{"ID" : "139", "SubInstance" : "grp_AES256_ECB_1_fu_189", "Port" : "sbox_1"}]},
 			{"Name" : "Rcon", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "183", "SubInstance" : "grp_AES256_ECB_1_fu_189", "Port" : "Rcon"},
-					{"ID" : "171", "SubInstance" : "grp_AES256_CTR_DRBG_Upda_fu_177", "Port" : "Rcon"}]},
+					{"ID" : "127", "SubInstance" : "grp_AES256_CTR_DRBG_Upda_fu_177", "Port" : "Rcon"},
+					{"ID" : "139", "SubInstance" : "grp_AES256_ECB_1_fu_189", "Port" : "Rcon"}]},
 			{"Name" : "DRBG_ctx_Key", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "183", "SubInstance" : "grp_AES256_ECB_1_fu_189", "Port" : "key"},
-					{"ID" : "171", "SubInstance" : "grp_AES256_CTR_DRBG_Upda_fu_177", "Port" : "DRBG_ctx_Key"}]},
+					{"ID" : "127", "SubInstance" : "grp_AES256_CTR_DRBG_Upda_fu_177", "Port" : "DRBG_ctx_Key"},
+					{"ID" : "139", "SubInstance" : "grp_AES256_ECB_1_fu_189", "Port" : "key"}]},
 			{"Name" : "DRBG_ctx_reseed_counter", "Type" : "OVld", "Direction" : "IO"}]},
-	{"ID" : "170", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.block_U", "Parent" : "169"},
-	{"ID" : "171", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177", "Parent" : "169", "Child" : ["172", "173"],
+	{"ID" : "126", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.block_U", "Parent" : "125"},
+	{"ID" : "127", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177", "Parent" : "125", "Child" : ["128", "129"],
 		"CDFG" : "AES256_CTR_DRBG_Upda",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1781,18 +1433,18 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "V", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "173", "SubInstance" : "grp_AES256_ECB_fu_171", "Port" : "ctr"}]},
+					{"ID" : "129", "SubInstance" : "grp_AES256_ECB_fu_171", "Port" : "ctr"}]},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "173", "SubInstance" : "grp_AES256_ECB_fu_171", "Port" : "sbox_1"}]},
+					{"ID" : "129", "SubInstance" : "grp_AES256_ECB_fu_171", "Port" : "sbox_1"}]},
 			{"Name" : "Rcon", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "173", "SubInstance" : "grp_AES256_ECB_fu_171", "Port" : "Rcon"}]},
+					{"ID" : "129", "SubInstance" : "grp_AES256_ECB_fu_171", "Port" : "Rcon"}]},
 			{"Name" : "DRBG_ctx_Key", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "173", "SubInstance" : "grp_AES256_ECB_fu_171", "Port" : "key"}]}]},
-	{"ID" : "172", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.temp_U", "Parent" : "171"},
-	{"ID" : "173", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171", "Parent" : "171", "Child" : ["174", "175", "176", "179"],
+					{"ID" : "129", "SubInstance" : "grp_AES256_ECB_fu_171", "Port" : "key"}]}]},
+	{"ID" : "128", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.temp_U", "Parent" : "127"},
+	{"ID" : "129", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171", "Parent" : "127", "Child" : ["130", "131", "132", "135"],
 		"CDFG" : "AES256_ECB",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1811,20 +1463,20 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "key", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "176", "SubInstance" : "grp_KeyExpansion_fu_525", "Port" : "Key"}]},
+					{"ID" : "132", "SubInstance" : "grp_KeyExpansion_fu_525", "Port" : "Key"}]},
 			{"Name" : "ctr", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "buffer_r", "Type" : "Memory", "Direction" : "O"},
 			{"Name" : "buffer_offset", "Type" : "None", "Direction" : "I"},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "179", "SubInstance" : "grp_Cipher_fu_536", "Port" : "sbox_1"},
-					{"ID" : "176", "SubInstance" : "grp_KeyExpansion_fu_525", "Port" : "sbox_1"}]},
+					{"ID" : "135", "SubInstance" : "grp_Cipher_fu_536", "Port" : "sbox_1"},
+					{"ID" : "132", "SubInstance" : "grp_KeyExpansion_fu_525", "Port" : "sbox_1"}]},
 			{"Name" : "Rcon", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "176", "SubInstance" : "grp_KeyExpansion_fu_525", "Port" : "Rcon"}]}]},
-	{"ID" : "174", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.ctx_RoundKey_U", "Parent" : "173"},
-	{"ID" : "175", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.test_U", "Parent" : "173"},
-	{"ID" : "176", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_KeyExpansion_fu_525", "Parent" : "173", "Child" : ["177", "178"],
+					{"ID" : "132", "SubInstance" : "grp_KeyExpansion_fu_525", "Port" : "Rcon"}]}]},
+	{"ID" : "130", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.ctx_RoundKey_U", "Parent" : "129"},
+	{"ID" : "131", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.test_U", "Parent" : "129"},
+	{"ID" : "132", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_KeyExpansion_fu_525", "Parent" : "129", "Child" : ["133", "134"],
 		"CDFG" : "KeyExpansion",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1842,9 +1494,9 @@ set RtlHierarchyInfo {[
 			{"Name" : "Key", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "Rcon", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "177", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_KeyExpansion_fu_525.sbox_1_U", "Parent" : "176"},
-	{"ID" : "178", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_KeyExpansion_fu_525.Rcon_U", "Parent" : "176"},
-	{"ID" : "179", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_Cipher_fu_536", "Parent" : "173", "Child" : ["180", "181"],
+	{"ID" : "133", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_KeyExpansion_fu_525.sbox_1_U", "Parent" : "132"},
+	{"ID" : "134", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_KeyExpansion_fu_525.Rcon_U", "Parent" : "132"},
+	{"ID" : "135", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_Cipher_fu_536", "Parent" : "129", "Child" : ["136", "137"],
 		"CDFG" : "Cipher",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1866,15 +1518,15 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "state", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "181", "SubInstance" : "grp_SubBytes_fu_249", "Port" : "state"},
-					{"ID" : "180", "SubInstance" : "grp_AddRoundKey_fu_238", "Port" : "state"}]},
+					{"ID" : "137", "SubInstance" : "grp_SubBytes_fu_249", "Port" : "state"},
+					{"ID" : "136", "SubInstance" : "grp_AddRoundKey_fu_238", "Port" : "state"}]},
 			{"Name" : "RoundKey", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "180", "SubInstance" : "grp_AddRoundKey_fu_238", "Port" : "RoundKey"}]},
+					{"ID" : "136", "SubInstance" : "grp_AddRoundKey_fu_238", "Port" : "RoundKey"}]},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "181", "SubInstance" : "grp_SubBytes_fu_249", "Port" : "sbox_1"}]}]},
-	{"ID" : "180", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_Cipher_fu_536.grp_AddRoundKey_fu_238", "Parent" : "179",
+					{"ID" : "137", "SubInstance" : "grp_SubBytes_fu_249", "Port" : "sbox_1"}]}]},
+	{"ID" : "136", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_Cipher_fu_536.grp_AddRoundKey_fu_238", "Parent" : "135",
 		"CDFG" : "AddRoundKey",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1891,7 +1543,7 @@ set RtlHierarchyInfo {[
 			{"Name" : "round", "Type" : "None", "Direction" : "I"},
 			{"Name" : "state", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "RoundKey", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "181", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_Cipher_fu_536.grp_SubBytes_fu_249", "Parent" : "179", "Child" : ["182"],
+	{"ID" : "137", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_Cipher_fu_536.grp_SubBytes_fu_249", "Parent" : "135", "Child" : ["138"],
 		"CDFG" : "SubBytes",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1907,8 +1559,8 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "state", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "182", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_Cipher_fu_536.grp_SubBytes_fu_249.sbox_1_U", "Parent" : "181"},
-	{"ID" : "183", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189", "Parent" : "169", "Child" : ["184", "185", "186", "189"],
+	{"ID" : "138", "Level" : "6", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_CTR_DRBG_Upda_fu_177.grp_AES256_ECB_fu_171.grp_Cipher_fu_536.grp_SubBytes_fu_249.sbox_1_U", "Parent" : "137"},
+	{"ID" : "139", "Level" : "2", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189", "Parent" : "125", "Child" : ["140", "141", "142", "145"],
 		"CDFG" : "AES256_ECB_1",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1927,19 +1579,19 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "key", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "186", "SubInstance" : "grp_KeyExpansion_fu_501", "Port" : "Key"}]},
+					{"ID" : "142", "SubInstance" : "grp_KeyExpansion_fu_501", "Port" : "Key"}]},
 			{"Name" : "ctr", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "buffer_r", "Type" : "Memory", "Direction" : "O"},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "186", "SubInstance" : "grp_KeyExpansion_fu_501", "Port" : "sbox_1"},
-					{"ID" : "189", "SubInstance" : "grp_Cipher_fu_512", "Port" : "sbox_1"}]},
+					{"ID" : "142", "SubInstance" : "grp_KeyExpansion_fu_501", "Port" : "sbox_1"},
+					{"ID" : "145", "SubInstance" : "grp_Cipher_fu_512", "Port" : "sbox_1"}]},
 			{"Name" : "Rcon", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "186", "SubInstance" : "grp_KeyExpansion_fu_501", "Port" : "Rcon"}]}]},
-	{"ID" : "184", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.ctx_RoundKey_U", "Parent" : "183"},
-	{"ID" : "185", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.test_U", "Parent" : "183"},
-	{"ID" : "186", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_KeyExpansion_fu_501", "Parent" : "183", "Child" : ["187", "188"],
+					{"ID" : "142", "SubInstance" : "grp_KeyExpansion_fu_501", "Port" : "Rcon"}]}]},
+	{"ID" : "140", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.ctx_RoundKey_U", "Parent" : "139"},
+	{"ID" : "141", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.test_U", "Parent" : "139"},
+	{"ID" : "142", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_KeyExpansion_fu_501", "Parent" : "139", "Child" : ["143", "144"],
 		"CDFG" : "KeyExpansion",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1957,9 +1609,9 @@ set RtlHierarchyInfo {[
 			{"Name" : "Key", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I"},
 			{"Name" : "Rcon", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "187", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_KeyExpansion_fu_501.sbox_1_U", "Parent" : "186"},
-	{"ID" : "188", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_KeyExpansion_fu_501.Rcon_U", "Parent" : "186"},
-	{"ID" : "189", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_Cipher_fu_512", "Parent" : "183", "Child" : ["190", "191"],
+	{"ID" : "143", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_KeyExpansion_fu_501.sbox_1_U", "Parent" : "142"},
+	{"ID" : "144", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_KeyExpansion_fu_501.Rcon_U", "Parent" : "142"},
+	{"ID" : "145", "Level" : "3", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_Cipher_fu_512", "Parent" : "139", "Child" : ["146", "147"],
 		"CDFG" : "Cipher",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -1981,15 +1633,15 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "state", "Type" : "Memory", "Direction" : "IO",
 				"SubConnect" : [
-					{"ID" : "191", "SubInstance" : "grp_SubBytes_fu_249", "Port" : "state"},
-					{"ID" : "190", "SubInstance" : "grp_AddRoundKey_fu_238", "Port" : "state"}]},
+					{"ID" : "147", "SubInstance" : "grp_SubBytes_fu_249", "Port" : "state"},
+					{"ID" : "146", "SubInstance" : "grp_AddRoundKey_fu_238", "Port" : "state"}]},
 			{"Name" : "RoundKey", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "190", "SubInstance" : "grp_AddRoundKey_fu_238", "Port" : "RoundKey"}]},
+					{"ID" : "146", "SubInstance" : "grp_AddRoundKey_fu_238", "Port" : "RoundKey"}]},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I",
 				"SubConnect" : [
-					{"ID" : "191", "SubInstance" : "grp_SubBytes_fu_249", "Port" : "sbox_1"}]}]},
-	{"ID" : "190", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_Cipher_fu_512.grp_AddRoundKey_fu_238", "Parent" : "189",
+					{"ID" : "147", "SubInstance" : "grp_SubBytes_fu_249", "Port" : "sbox_1"}]}]},
+	{"ID" : "146", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_Cipher_fu_512.grp_AddRoundKey_fu_238", "Parent" : "145",
 		"CDFG" : "AddRoundKey",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -2006,7 +1658,7 @@ set RtlHierarchyInfo {[
 			{"Name" : "round", "Type" : "None", "Direction" : "I"},
 			{"Name" : "state", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "RoundKey", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "191", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_Cipher_fu_512.grp_SubBytes_fu_249", "Parent" : "189", "Child" : ["192"],
+	{"ID" : "147", "Level" : "4", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_Cipher_fu_512.grp_SubBytes_fu_249", "Parent" : "145", "Child" : ["148"],
 		"CDFG" : "SubBytes",
 		"Protocol" : "ap_ctrl_hs",
 		"ControlExist" : "1", "ap_start" : "1", "ap_ready" : "1", "ap_done" : "1", "ap_continue" : "0", "ap_idle" : "1",
@@ -2022,222 +1674,116 @@ set RtlHierarchyInfo {[
 		"Port" : [
 			{"Name" : "state", "Type" : "Memory", "Direction" : "IO"},
 			{"Name" : "sbox_1", "Type" : "Memory", "Direction" : "I"}]},
-	{"ID" : "192", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_Cipher_fu_512.grp_SubBytes_fu_249.sbox_1_U", "Parent" : "191"}]}
+	{"ID" : "148", "Level" : "5", "Path" : "`AUTOTB_DUT_INST.grp_randombytes_fu_57.grp_AES256_ECB_1_fu_189.grp_Cipher_fu_512.grp_SubBytes_fu_249.sbox_1_U", "Parent" : "147"}]}
 
 
 set ArgLastReadFirstWriteLatency {
 	crypto_sign_keypair {
-		pk {Type IO LastRead 2 FirstWrite -1}
-		sk {Type IO LastRead 4 FirstWrite -1}
+		pk {Type IO LastRead 3 FirstWrite -1}
+		sk {Type IO LastRead 8 FirstWrite -1}
 		DRBG_ctx_V {Type IO LastRead 8 FirstWrite -1}
 		sbox_1 {Type I LastRead -1 FirstWrite -1}
 		Rcon {Type I LastRead -1 FirstWrite -1}
 		DRBG_ctx_Key {Type IO LastRead 3 FirstWrite -1}
 		DRBG_ctx_reseed_counter {Type IO LastRead 2 FirstWrite 2}
 		haraka_rc {Type I LastRead -1 FirstWrite -1}
-		rc {Type IO LastRead -1 FirstWrite -1}
+		rc {Type IO LastRead 11 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc_sseed {Type IO LastRead -1 FirstWrite -1}}
+		rc_sseed {Type IO LastRead 11 FirstWrite -1}}
 	crypto_sign_seed_key {
-		pk {Type IO LastRead 2 FirstWrite -1}
-		sk {Type IO LastRead 4 FirstWrite -1}
-		seed {Type I LastRead 8 FirstWrite -1}
+		pk {Type IO LastRead 3 FirstWrite -1}
+		sk {Type IO LastRead 8 FirstWrite -1}
+		seed {Type I LastRead 3 FirstWrite -1}
 		haraka_rc {Type I LastRead -1 FirstWrite -1}
-		rc {Type IO LastRead -1 FirstWrite -1}
+		rc {Type IO LastRead 11 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc_sseed {Type IO LastRead -1 FirstWrite -1}}
-	treehash {
+		rc_sseed {Type IO LastRead 11 FirstWrite -1}}
+	treehash_wots {
 		root {Type O LastRead -1 FirstWrite 3}
-		auth_path {Type O LastRead -1 FirstWrite 13}
+		auth_path {Type O LastRead -1 FirstWrite 4}
 		tree_addr {Type IO LastRead 5 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc_sseed {Type I LastRead 3 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	thash_1 {
-		out_r {Type O LastRead -1 FirstWrite 5}
-		out_offset {Type I LastRead 0 FirstWrite -1}
-		in_r {Type I LastRead 2 FirstWrite -1}
-		addr {Type I LastRead 1 FirstWrite -1}
+		rc_sseed {Type I LastRead 11 FirstWrite -1}
+		rc {Type I LastRead 11 FirstWrite -1}}
+	wots_gen_leaf {
+		leaf {Type O LastRead -1 FirstWrite 11}
+		leaf_offset {Type I LastRead 0 FirstWrite -1}
+		addr_idx {Type I LastRead 0 FirstWrite -1}
+		tree_addr {Type I LastRead 5 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	haraka_S_2 {
-		out_r {Type O LastRead -1 FirstWrite 5}
-		out_offset {Type I LastRead 0 FirstWrite -1}
-		in_r {Type I LastRead 3 FirstWrite -1}
-		inlen {Type I LastRead 0 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	haraka_S_absorb {
-		s {Type IO LastRead 6 FirstWrite 3}
-		m {Type I LastRead 3 FirstWrite -1}
-		mlen {Type I LastRead 0 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	haraka512_perm_1 {
-		out_r {Type IO LastRead 1 FirstWrite 4}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	aesenc {
-		s {Type IO LastRead 1 FirstWrite 4}
-		s_offset {Type I LastRead 0 FirstWrite -1}
-		rk {Type I LastRead 3 FirstWrite -1}
-		rk_offset {Type I LastRead 0 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}}
-	unpackhi32_1 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
-	unpacklo32_2 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		t_offset {Type I LastRead 0 FirstWrite -1}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
-	unpacklo32_1 {
-		t {Type O LastRead -1 FirstWrite 6}
-		a {Type I LastRead 4 FirstWrite -1}}
-	unpackhi32 {
-		t {Type IO LastRead 3 FirstWrite 6}
-		b {Type I LastRead 4 FirstWrite -1}}
-	unpacklo32 {
-		t {Type IO LastRead 3 FirstWrite 6}
-		b {Type I LastRead 4 FirstWrite -1}}
-	haraka512_perm_1 {
-		out_r {Type IO LastRead 1 FirstWrite 4}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	aesenc {
-		s {Type IO LastRead 1 FirstWrite 4}
-		s_offset {Type I LastRead 0 FirstWrite -1}
-		rk {Type I LastRead 3 FirstWrite -1}
-		rk_offset {Type I LastRead 0 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}}
-	unpackhi32_1 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
-	unpacklo32_2 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		t_offset {Type I LastRead 0 FirstWrite -1}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
-	unpacklo32_1 {
-		t {Type O LastRead -1 FirstWrite 6}
-		a {Type I LastRead 4 FirstWrite -1}}
-	unpackhi32 {
-		t {Type IO LastRead 3 FirstWrite 6}
-		b {Type I LastRead 4 FirstWrite -1}}
-	unpacklo32 {
-		t {Type IO LastRead 3 FirstWrite 6}
-		b {Type I LastRead 4 FirstWrite -1}}
-	thash_170 {
-		out_r {Type IO LastRead 2 FirstWrite 5}
-		in_offset {Type I LastRead 0 FirstWrite -1}
-		addr {Type I LastRead 1 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	haraka_S_2 {
-		out_r {Type O LastRead -1 FirstWrite 5}
-		out_offset {Type I LastRead 0 FirstWrite -1}
-		in_r {Type I LastRead 3 FirstWrite -1}
-		inlen {Type I LastRead 0 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	haraka_S_absorb {
-		s {Type IO LastRead 6 FirstWrite 3}
-		m {Type I LastRead 3 FirstWrite -1}
-		mlen {Type I LastRead 0 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	haraka512_perm_1 {
-		out_r {Type IO LastRead 1 FirstWrite 4}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	aesenc {
-		s {Type IO LastRead 1 FirstWrite 4}
-		s_offset {Type I LastRead 0 FirstWrite -1}
-		rk {Type I LastRead 3 FirstWrite -1}
-		rk_offset {Type I LastRead 0 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}}
-	unpackhi32_1 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
-	unpacklo32_2 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		t_offset {Type I LastRead 0 FirstWrite -1}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
-	unpacklo32_1 {
-		t {Type O LastRead -1 FirstWrite 6}
-		a {Type I LastRead 4 FirstWrite -1}}
-	unpackhi32 {
-		t {Type IO LastRead 3 FirstWrite 6}
-		b {Type I LastRead 4 FirstWrite -1}}
-	unpacklo32 {
-		t {Type IO LastRead 3 FirstWrite 6}
-		b {Type I LastRead 4 FirstWrite -1}}
-	haraka512_perm_1 {
-		out_r {Type IO LastRead 1 FirstWrite 4}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	aesenc {
-		s {Type IO LastRead 1 FirstWrite 4}
-		s_offset {Type I LastRead 0 FirstWrite -1}
-		rk {Type I LastRead 3 FirstWrite -1}
-		rk_offset {Type I LastRead 0 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}}
-	unpackhi32_1 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
-	unpacklo32_2 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		t_offset {Type I LastRead 0 FirstWrite -1}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
-	unpacklo32_1 {
-		t {Type O LastRead -1 FirstWrite 6}
-		a {Type I LastRead 4 FirstWrite -1}}
-	unpackhi32 {
-		t {Type IO LastRead 3 FirstWrite 6}
-		b {Type I LastRead 4 FirstWrite -1}}
-	unpacklo32 {
-		t {Type IO LastRead 3 FirstWrite 6}
-		b {Type I LastRead 4 FirstWrite -1}}
+		rc_sseed {Type I LastRead 11 FirstWrite -1}
+		rc {Type I LastRead 11 FirstWrite -1}}
 	thash {
-		out_r {Type IO LastRead 3 FirstWrite 6}
+		out_r {Type IO LastRead 4 FirstWrite 71}
 		in_offset {Type I LastRead 0 FirstWrite -1}
-		addr {Type I LastRead 2 FirstWrite -1}
+		addr {Type I LastRead 3 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
-	haraka512 {
-		out_r {Type O LastRead -1 FirstWrite 4}
-		in_r {Type I LastRead 2 FirstWrite -1}
-		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
+		rc {Type I LastRead 11 FirstWrite -1}}
 	haraka512_perm {
 		out_r {Type O LastRead -1 FirstWrite 4}
 		in_r {Type I LastRead 1 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
+		rc {Type I LastRead 11 FirstWrite -1}}
 	aesenc {
-		s {Type IO LastRead 1 FirstWrite 4}
+		s {Type IO LastRead 8 FirstWrite 8}
 		s_offset {Type I LastRead 0 FirstWrite -1}
-		rk {Type I LastRead 3 FirstWrite -1}
-		rk_offset {Type I LastRead 0 FirstWrite -1}
+		rk {Type I LastRead 11 FirstWrite -1}
+		rk_offset {Type I LastRead 3 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}}
-	unpackhi32_1 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpacklo32_2 {
-		t {Type IO LastRead 4 FirstWrite 6}
+		a {Type IO LastRead 4 FirstWrite 6}
 		t_offset {Type I LastRead 0 FirstWrite -1}
 		a_offset {Type I LastRead 0 FirstWrite -1}
 		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpacklo32_1 {
 		t {Type O LastRead -1 FirstWrite 6}
 		a {Type I LastRead 4 FirstWrite -1}}
+	unpackhi32_1 {
+		t {Type IO LastRead 4 FirstWrite 6}
+		a_offset {Type I LastRead 0 FirstWrite -1}
+		b_offset {Type I LastRead 0 FirstWrite -1}}
+	unpackhi32 {
+		t {Type IO LastRead 3 FirstWrite 6}
+		b {Type I LastRead 4 FirstWrite -1}}
+	unpacklo32 {
+		t {Type IO LastRead 3 FirstWrite 6}
+		b {Type I LastRead 4 FirstWrite -1}}
+	thash_1 {
+		out_r {Type O LastRead -1 FirstWrite 11}
+		out_offset {Type I LastRead 0 FirstWrite -1}
+		in_r {Type I LastRead 3 FirstWrite -1}
+		addr {Type I LastRead 2 FirstWrite -1}
+		sbox {Type I LastRead -1 FirstWrite -1}
+		rc {Type I LastRead 11 FirstWrite -1}}
+	haraka_S_2 {
+		out_r {Type O LastRead -1 FirstWrite 11}
+		out_offset {Type I LastRead 0 FirstWrite -1}
+		in_r {Type I LastRead 4 FirstWrite -1}
+		inlen {Type I LastRead 0 FirstWrite -1}
+		sbox {Type I LastRead -1 FirstWrite -1}
+		rc {Type I LastRead 11 FirstWrite -1}}
+	haraka512_perm_1 {
+		out_r {Type IO LastRead 1 FirstWrite 4}
+		sbox {Type I LastRead -1 FirstWrite -1}
+		rc {Type I LastRead 11 FirstWrite -1}}
+	aesenc {
+		s {Type IO LastRead 8 FirstWrite 8}
+		s_offset {Type I LastRead 0 FirstWrite -1}
+		rk {Type I LastRead 11 FirstWrite -1}
+		rk_offset {Type I LastRead 3 FirstWrite -1}
+		sbox {Type I LastRead -1 FirstWrite -1}}
+	unpacklo32_2 {
+		a {Type IO LastRead 4 FirstWrite 6}
+		t_offset {Type I LastRead 0 FirstWrite -1}
+		a_offset {Type I LastRead 0 FirstWrite -1}
+		b_offset {Type I LastRead 0 FirstWrite -1}}
+	unpacklo32_1 {
+		t {Type O LastRead -1 FirstWrite 6}
+		a {Type I LastRead 4 FirstWrite -1}}
+	unpackhi32_1 {
+		t {Type IO LastRead 4 FirstWrite 6}
+		a_offset {Type I LastRead 0 FirstWrite -1}
+		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpackhi32 {
 		t {Type IO LastRead 3 FirstWrite 6}
 		b {Type I LastRead 4 FirstWrite -1}}
@@ -2249,102 +1795,137 @@ set ArgLastReadFirstWriteLatency {
 		out_offset {Type I LastRead 0 FirstWrite -1}
 		addr {Type I LastRead 1 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc_sseed {Type I LastRead 3 FirstWrite -1}}
+		rc_sseed {Type I LastRead 11 FirstWrite -1}}
 	haraka256_sk {
 		out_r {Type O LastRead -1 FirstWrite 4}
 		in_r {Type I LastRead 3 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc_sseed {Type I LastRead 3 FirstWrite -1}}
+		rc_sseed {Type I LastRead 11 FirstWrite -1}}
 	aesenc_1 {
-		s {Type IO LastRead 1 FirstWrite 4}
+		s {Type IO LastRead 8 FirstWrite 8}
 		s_offset {Type I LastRead 0 FirstWrite -1}
-		rk {Type I LastRead 3 FirstWrite -1}
-		rk_offset {Type I LastRead 0 FirstWrite -1}
+		rk {Type I LastRead 11 FirstWrite -1}
+		rk_offset {Type I LastRead 3 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}}
-	unpacklo32_292 {
+	unpacklo32_279 {
 		t {Type O LastRead -1 FirstWrite 6}
-		a {Type I LastRead 4 FirstWrite -1}}
+		b {Type I LastRead 4 FirstWrite -1}}
 	unpackhi32_1_1 {
 		a {Type IO LastRead 4 FirstWrite 6}}
+	thash_160 {
+		in_r {Type IO LastRead 3 FirstWrite 11}
+		in_offset {Type I LastRead 0 FirstWrite -1}
+		addr {Type I LastRead 2 FirstWrite -1}
+		sbox {Type I LastRead -1 FirstWrite -1}
+		rc {Type I LastRead 11 FirstWrite -1}}
+	haraka_S_2 {
+		out_r {Type O LastRead -1 FirstWrite 11}
+		out_offset {Type I LastRead 0 FirstWrite -1}
+		in_r {Type I LastRead 4 FirstWrite -1}
+		inlen {Type I LastRead 0 FirstWrite -1}
+		sbox {Type I LastRead -1 FirstWrite -1}
+		rc {Type I LastRead 11 FirstWrite -1}}
+	haraka512_perm_1 {
+		out_r {Type IO LastRead 1 FirstWrite 4}
+		sbox {Type I LastRead -1 FirstWrite -1}
+		rc {Type I LastRead 11 FirstWrite -1}}
+	aesenc {
+		s {Type IO LastRead 8 FirstWrite 8}
+		s_offset {Type I LastRead 0 FirstWrite -1}
+		rk {Type I LastRead 11 FirstWrite -1}
+		rk_offset {Type I LastRead 3 FirstWrite -1}
+		sbox {Type I LastRead -1 FirstWrite -1}}
+	unpacklo32_2 {
+		a {Type IO LastRead 4 FirstWrite 6}
+		t_offset {Type I LastRead 0 FirstWrite -1}
+		a_offset {Type I LastRead 0 FirstWrite -1}
+		b_offset {Type I LastRead 0 FirstWrite -1}}
+	unpacklo32_1 {
+		t {Type O LastRead -1 FirstWrite 6}
+		a {Type I LastRead 4 FirstWrite -1}}
+	unpackhi32_1 {
+		t {Type IO LastRead 4 FirstWrite 6}
+		a_offset {Type I LastRead 0 FirstWrite -1}
+		b_offset {Type I LastRead 0 FirstWrite -1}}
+	unpackhi32 {
+		t {Type IO LastRead 3 FirstWrite 6}
+		b {Type I LastRead 4 FirstWrite -1}}
+	unpacklo32 {
+		t {Type IO LastRead 3 FirstWrite 6}
+		b {Type I LastRead 4 FirstWrite -1}}
 	tweak_constants {
-		pk_seed {Type I LastRead 2 FirstWrite -1}
-		sk_seed {Type I LastRead 2 FirstWrite -1}
+		pk_seed {Type I LastRead 3 FirstWrite -1}
+		sk_seed {Type I LastRead 3 FirstWrite -1}
 		haraka_rc {Type I LastRead -1 FirstWrite -1}
-		rc {Type IO LastRead 3 FirstWrite -1}
+		rc {Type IO LastRead 11 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
 		rc_sseed {Type O LastRead -1 FirstWrite 5}}
 	haraka_S_1 {
-		out_r {Type O LastRead -1 FirstWrite 6}
-		in_r {Type I LastRead 2 FirstWrite -1}
+		out_r {Type O LastRead -1 FirstWrite 9}
+		in_r {Type I LastRead 3 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
+		rc {Type I LastRead 11 FirstWrite -1}}
 	haraka512_perm_1 {
 		out_r {Type IO LastRead 1 FirstWrite 4}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
+		rc {Type I LastRead 11 FirstWrite -1}}
 	aesenc {
-		s {Type IO LastRead 1 FirstWrite 4}
+		s {Type IO LastRead 8 FirstWrite 8}
 		s_offset {Type I LastRead 0 FirstWrite -1}
-		rk {Type I LastRead 3 FirstWrite -1}
-		rk_offset {Type I LastRead 0 FirstWrite -1}
+		rk {Type I LastRead 11 FirstWrite -1}
+		rk_offset {Type I LastRead 3 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}}
-	unpackhi32_1 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpacklo32_2 {
-		t {Type IO LastRead 4 FirstWrite 6}
+		a {Type IO LastRead 4 FirstWrite 6}
 		t_offset {Type I LastRead 0 FirstWrite -1}
 		a_offset {Type I LastRead 0 FirstWrite -1}
 		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpacklo32_1 {
 		t {Type O LastRead -1 FirstWrite 6}
 		a {Type I LastRead 4 FirstWrite -1}}
+	unpackhi32_1 {
+		t {Type IO LastRead 4 FirstWrite 6}
+		a_offset {Type I LastRead 0 FirstWrite -1}
+		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpackhi32 {
 		t {Type IO LastRead 3 FirstWrite 6}
 		b {Type I LastRead 4 FirstWrite -1}}
 	unpacklo32 {
 		t {Type IO LastRead 3 FirstWrite 6}
 		b {Type I LastRead 4 FirstWrite -1}}
-	haraka_S_absorb_1 {
-		s {Type IO LastRead 4 FirstWrite 5}
-		m {Type I LastRead 2 FirstWrite -1}}
 	haraka_S {
-		out_r {Type O LastRead -1 FirstWrite 6}
-		in_r {Type I LastRead 2 FirstWrite -1}
+		out_r {Type O LastRead -1 FirstWrite 9}
+		in_r {Type I LastRead 3 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
+		rc {Type I LastRead 11 FirstWrite -1}}
 	haraka512_perm_1 {
 		out_r {Type IO LastRead 1 FirstWrite 4}
 		sbox {Type I LastRead -1 FirstWrite -1}
-		rc {Type I LastRead 3 FirstWrite -1}}
+		rc {Type I LastRead 11 FirstWrite -1}}
 	aesenc {
-		s {Type IO LastRead 1 FirstWrite 4}
+		s {Type IO LastRead 8 FirstWrite 8}
 		s_offset {Type I LastRead 0 FirstWrite -1}
-		rk {Type I LastRead 3 FirstWrite -1}
-		rk_offset {Type I LastRead 0 FirstWrite -1}
+		rk {Type I LastRead 11 FirstWrite -1}
+		rk_offset {Type I LastRead 3 FirstWrite -1}
 		sbox {Type I LastRead -1 FirstWrite -1}}
-	unpackhi32_1 {
-		t {Type IO LastRead 4 FirstWrite 6}
-		a_offset {Type I LastRead 0 FirstWrite -1}
-		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpacklo32_2 {
-		t {Type IO LastRead 4 FirstWrite 6}
+		a {Type IO LastRead 4 FirstWrite 6}
 		t_offset {Type I LastRead 0 FirstWrite -1}
 		a_offset {Type I LastRead 0 FirstWrite -1}
 		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpacklo32_1 {
 		t {Type O LastRead -1 FirstWrite 6}
 		a {Type I LastRead 4 FirstWrite -1}}
+	unpackhi32_1 {
+		t {Type IO LastRead 4 FirstWrite 6}
+		a_offset {Type I LastRead 0 FirstWrite -1}
+		b_offset {Type I LastRead 0 FirstWrite -1}}
 	unpackhi32 {
 		t {Type IO LastRead 3 FirstWrite 6}
 		b {Type I LastRead 4 FirstWrite -1}}
 	unpacklo32 {
 		t {Type IO LastRead 3 FirstWrite 6}
 		b {Type I LastRead 4 FirstWrite -1}}
-	haraka_S_absorb_2 {
-		s {Type IO LastRead 4 FirstWrite 5}
-		m {Type I LastRead 2 FirstWrite -1}}
 	randombytes {
 		x {Type O LastRead -1 FirstWrite 7}
 		DRBG_ctx_V {Type IO LastRead 8 FirstWrite -1}
@@ -2416,9 +1997,11 @@ set PipelineEnableSignalInfo {[
 set Spec2ImplPortList { 
 	pk { ap_memory {  { pk_address0 mem_address 1 5 }  { pk_ce0 mem_ce 1 1 }  { pk_we0 mem_we 1 1 }  { pk_d0 mem_din 1 8 }  { pk_q0 mem_dout 0 8 } } }
 	sk { ap_memory {  { sk_address0 mem_address 1 6 }  { sk_ce0 mem_ce 1 1 }  { sk_we0 mem_we 1 1 }  { sk_d0 mem_din 1 8 }  { sk_q0 mem_dout 0 8 } } }
-	DRBG_ctx_V { ap_memory {  { DRBG_ctx_V_address0 mem_address 1 4 }  { DRBG_ctx_V_ce0 mem_ce 1 1 }  { DRBG_ctx_V_we0 mem_we 1 1 }  { DRBG_ctx_V_d0 mem_din 1 8 }  { DRBG_ctx_V_q0 mem_dout 0 8 }  { DRBG_ctx_V_address1 MemPortADDR2 1 4 }  { DRBG_ctx_V_ce1 MemPortCE2 1 1 }  { DRBG_ctx_V_q1 MemPortDOUT2 0 8 } } }
-	DRBG_ctx_Key { ap_memory {  { DRBG_ctx_Key_address0 mem_address 1 5 }  { DRBG_ctx_Key_ce0 mem_ce 1 1 }  { DRBG_ctx_Key_we0 mem_we 1 1 }  { DRBG_ctx_Key_d0 mem_din 1 8 }  { DRBG_ctx_Key_q0 mem_dout 0 8 }  { DRBG_ctx_Key_address1 MemPortADDR2 1 5 }  { DRBG_ctx_Key_ce1 MemPortCE2 1 1 }  { DRBG_ctx_Key_q1 MemPortDOUT2 0 8 } } }
+	DRBG_ctx_V { ap_memory {  { DRBG_ctx_V_address0 mem_address 1 4 }  { DRBG_ctx_V_ce0 mem_ce 1 1 }  { DRBG_ctx_V_we0 mem_we 1 1 }  { DRBG_ctx_V_d0 mem_din 1 8 }  { DRBG_ctx_V_q0 mem_dout 0 8 }  { DRBG_ctx_V_address1 mem_address 1 4 }  { DRBG_ctx_V_ce1 mem_ce 1 1 }  { DRBG_ctx_V_q1 mem_dout 0 8 } } }
+	DRBG_ctx_Key { ap_memory {  { DRBG_ctx_Key_address0 mem_address 1 5 }  { DRBG_ctx_Key_ce0 mem_ce 1 1 }  { DRBG_ctx_Key_we0 mem_we 1 1 }  { DRBG_ctx_Key_d0 mem_din 1 8 }  { DRBG_ctx_Key_q0 mem_dout 0 8 }  { DRBG_ctx_Key_address1 mem_address 1 5 }  { DRBG_ctx_Key_ce1 mem_ce 1 1 }  { DRBG_ctx_Key_q1 mem_dout 0 8 } } }
 	DRBG_ctx_reseed_counter { ap_ovld {  { DRBG_ctx_reseed_counter_i in_data 0 32 }  { DRBG_ctx_reseed_counter_o out_data 1 32 }  { DRBG_ctx_reseed_counter_o_ap_vld out_vld 1 1 } } }
+	rc { ap_memory {  { rc_address0 mem_address 1 10 }  { rc_ce0 mem_ce 1 1 }  { rc_we0 mem_we 1 1 }  { rc_d0 mem_din 1 8 }  { rc_q0 mem_dout 0 8 }  { rc_address1 mem_address 1 10 }  { rc_ce1 mem_ce 1 1 }  { rc_q1 mem_dout 0 8 } } }
+	rc_sseed { ap_memory {  { rc_sseed_address0 mem_address 1 10 }  { rc_sseed_ce0 mem_ce 1 1 }  { rc_sseed_we0 mem_we 1 1 }  { rc_sseed_d0 mem_din 1 8 }  { rc_sseed_q0 mem_dout 0 8 }  { rc_sseed_address1 mem_address 1 10 }  { rc_sseed_ce1 mem_ce 1 1 }  { rc_sseed_q1 mem_dout 0 8 } } }
 }
 
 set busDeadlockParameterList { 

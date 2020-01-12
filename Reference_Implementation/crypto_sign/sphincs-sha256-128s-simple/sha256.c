@@ -258,10 +258,11 @@ static const uint8_t iv_256[32] = {
 };
 
 void sha256_inc_init(uint8_t *state) {
-    for (size_t i = 0; i < 32; ++i) {
+	size_t i;
+    for (i = 0; i < 32; ++i) {
         state[i] = iv_256[i];
     }
-    for (size_t i = 32; i < 40; ++i) {
+    for (i = 32; i < 40; ++i) {
         state[i] = 0;
     }
 }
@@ -278,19 +279,20 @@ void sha256_inc_blocks(uint8_t *state, const uint8_t *in, size_t inblocks) {
 void sha256_inc_finalize(uint8_t *out, uint8_t *state, const uint8_t *in, size_t inlen) {
     uint8_t padded[128];
     uint64_t bytes = load_bigendian_64(state + 32) + inlen;
+    size_t i;
 
     crypto_hashblocks_sha256(state, in, inlen);
     in += inlen;
     inlen &= 63;
     in -= inlen;
 
-    for (size_t i = 0; i < inlen; ++i) {
+    for (i = 0; i < inlen; ++i) {
         padded[i] = in[i];
     }
     padded[inlen] = 0x80;
 
     if (inlen < 56) {
-        for (size_t i = inlen + 1; i < 56; ++i) {
+        for (i = inlen + 1; i < 56; ++i) {
             padded[i] = 0;
         }
         padded[56] = (uint8_t) (bytes >> 53);
@@ -317,7 +319,7 @@ void sha256_inc_finalize(uint8_t *out, uint8_t *state, const uint8_t *in, size_t
         crypto_hashblocks_sha256(state, padded, 128);
     }
 
-    for (size_t i = 0; i < 32; ++i) {
+    for (i = 0; i < 32; ++i) {
         out[i] = state[i];
     }
 }

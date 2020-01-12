@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
+  <source>
+    <originFiles name="address.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/address.c"/>
+    <originFiles name="fors.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/fors.c"/>
+    <originFiles name="hash_sha256.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/hash_sha256.c"/>
+    <originFiles name="rng.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/rng.c"/>
+    <originFiles name="sha256.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/sha256.c"/>
+    <originFiles name="sign.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/sign.c"/>
+    <originFiles name="thash_sha256_simple.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/thash_sha256_simple.c"/>
+    <originFiles name="utils.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/utils.c"/>
+    <originFiles name="wots.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/wots.c"/>
+    <originFiles name="aes.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/aes.c"/>
+  </source>
+  <testbench>
+    <originFiles name="newtest_sign.c" path="/home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-sha256-128s-simple/newtest_sign.c"/>
+  </testbench>
+</autopilotfilemapping:AutoPilotFileMapping>

@@ -3,7 +3,7 @@
 # Memory (RAM/ROM)  definition:
 set ID 128
 set hasByteEnable 0
-set MemName crypto_sign_keypair_seed
+set MemName crypto_sign_keypalbW
 set CoreName ap_simcore_mem
 set PortList { 2 3 }
 set DataWd 8
@@ -164,6 +164,44 @@ eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'DRBG_ctx_Key'"
+}
+}
+
+
+# XIL_BRAM:
+if {${::AESL::PGuard_autoexp_gen}} {
+if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
+eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
+    id 134 \
+    name rc \
+    reset_level 1 \
+    sync_rst true \
+    dir IO \
+    corename rc \
+    op interface \
+    ports { rc_address0 { O 10 vector } rc_ce0 { O 1 bit } rc_we0 { O 1 bit } rc_d0 { O 8 vector } rc_q0 { I 8 vector } rc_address1 { O 10 vector } rc_ce1 { O 1 bit } rc_q1 { I 8 vector } } \
+} "
+} else {
+puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'rc'"
+}
+}
+
+
+# XIL_BRAM:
+if {${::AESL::PGuard_autoexp_gen}} {
+if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
+eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
+    id 135 \
+    name rc_sseed \
+    reset_level 1 \
+    sync_rst true \
+    dir IO \
+    corename rc_sseed \
+    op interface \
+    ports { rc_sseed_address0 { O 10 vector } rc_sseed_ce0 { O 1 bit } rc_sseed_we0 { O 1 bit } rc_sseed_d0 { O 8 vector } rc_sseed_q0 { I 8 vector } rc_sseed_address1 { O 10 vector } rc_sseed_ce1 { O 1 bit } rc_sseed_q1 { I 8 vector } } \
+} "
+} else {
+puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'rc_sseed'"
 }
 }
 

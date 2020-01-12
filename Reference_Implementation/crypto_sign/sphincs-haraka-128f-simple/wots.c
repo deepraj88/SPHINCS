@@ -50,6 +50,8 @@ static void gen_chain(unsigned char *out, const unsigned char *in,
         set_hash_addr(addr, i);
         thash(out, out, 1, pub_seed, addr);
     }
+//        printf("size of unsigned long long = %d\n",sizeof(unsigned long long));
+//        printf("size of uint32_t = %d\n",sizeof(uint32_t));
 }
 
 /**
@@ -148,14 +150,17 @@ void wots_sign(unsigned char *sig, const unsigned char *msg,
  *
  * Writes the computed public key to 'pk'.
  */
-void wots_pk_from_sig(unsigned char *pk,
-                      const unsigned char *sig, const unsigned char *msg,
-                      const unsigned char *pub_seed, uint32_t addr[8])
+void wots_pk_from_sig(unsigned char pk[SPX_WOTS_BYTES],
+                      const unsigned char sig[SPX_WOTS_BYTES], const unsigned char msg[SPX_N],
+                      const unsigned char pub_seed[SPX_N], uint32_t addr[8])
 {
     int lengths[SPX_WOTS_LEN];
     uint32_t i;
+    int loop;
 
     chain_lengths(lengths, msg);
+//    for(loop=0;loop<SPX_WOTS_LEN;loop++)
+//    	pk[loop] = lengths[loop]%256;
 
     for (i = 0; i < SPX_WOTS_LEN; i++) {
         set_chain_addr(addr, i);

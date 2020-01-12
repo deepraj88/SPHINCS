@@ -25,7 +25,7 @@ void prf_addr(unsigned char *out, const unsigned char *key,
     unsigned char outbuf[32];
     int loop;
 
-    (void)key; /* Suppress an 'unused parameter' warning. */
+//    (void)key; /* Suppress an 'unused parameter' warning. */
 
     addr_to_bytes(buf, addr);
     haraka256_sk(outbuf, buf);

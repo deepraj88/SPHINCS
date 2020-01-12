@@ -1,5 +1,5 @@
 /********************************************************************************************
-* Abstract: run tests against known answer test vectors for qTesla_128
+* Abstract: run tests against known answer test vectors for SPHINCS
 *
 * Modified from a file created by Bassham, Lawrence E (Fed) on 8/29/17.
 * Copyright © 2017 Bassham, Lawrence E (Fed). All rights reserved.
@@ -77,7 +77,7 @@ main()
     }
 #endif
     done = 0;
-    //do {
+    do {
 #ifdef READFILE
     	if ( FindMarker(fp_rsp, "count = ") ) {
             ret_val=fscanf(fp_rsp, "%d", &count);
@@ -168,22 +168,22 @@ main()
         //print_aes256_struct();
         if ( (ret_val = crypto_sign_keypair(pk, sk)) != 0) {
             printf("crypto_sign_keypair returned <%d>\n", ret_val);
-            return KAT_CRYPTO_FAILURE;
+//            return KAT_CRYPTO_FAILURE;
         }
 #endif
 
 #ifdef READFILE
         if ( !ReadHex(fp_rsp, pk_rsp, CRYPTO_PUBLICKEYBYTES, "pk = ") ) {
-           // printf("ERROR: unable to read 'pk' from <%s>\n", fn_rsp);
+            printf("ERROR: unable to read 'pk' from <%s>\n", fn_rsp);
             //return KAT_DATA_ERROR;
         }
         if ( !ReadHex(fp_rsp, sk_rsp, CRYPTO_SECRETKEYBYTES, "sk = ") ) {
-           // printf("ERROR: unable to read 'sk' from <%s>\n", fn_rsp);
+            printf("ERROR: unable to read 'sk' from <%s>\n", fn_rsp);
             //return KAT_DATA_ERROR;
         }
 #endif
 
-#if 0
+#if 1
         if(memcmp(pk,pk_rsp,CRYPTO_PUBLICKEYBYTES)!=0){
 	    printf("ERROR: pk is different from <%s>\n", fn_rsp);
 	    return KAT_VERIFICATION_ERROR;
@@ -199,7 +199,7 @@ main()
         //write_aes256_struct(Key_enc, V_enc, reseed_counter_enc);
         if ( (ret_val = crypto_sign(sm, &smlen, m, mlen, sk_rsp)) != 0) {
             printf("crypto_sign returned <%d>\n", ret_val);
-            return KAT_CRYPTO_FAILURE;
+//            return KAT_CRYPTO_FAILURE;
         }
 #endif
 
@@ -234,7 +234,7 @@ main()
        			}
        		}
        //	printf("Total error = %d\n",error_count);
-	    //printf("ERROR: sm is different from <%s>\n", sm_rsp);
+	    printf("ERR: sm is different from <%s>\n", sm_rsp);
 	    //return KAT_VERIFICATION_ERROR;
 	}
 #endif
@@ -243,17 +243,17 @@ main()
         //write_aes256_struct(Key_dec, V_dec, reseed_counter_dec);
        	//printf("before sign open\n");
         if ( (ret_val = crypto_sign_open(m1, &mlen1, sm, smlen, pk)) != 0) {
-          //  printf("crypto_sign_open returned <%d>\n", ret_val);
+            printf("crypto_sign_open returned <%d>\n", ret_val);
             //return KAT_CRYPTO_FAILURE;
         }
         
         if ( mlen != mlen1 ) {
-           // printf("crypto_sign_open returned bad 'mlen': Got <%lld>, expected <%lld>\n", mlen1, mlen);
+            printf("crypto_sign_open returned bad 'mlen': Got <%lld>, expected <%lld>\n", mlen1, mlen);
             //return KAT_CRYPTO_FAILURE;
         }
         
         if ( memcmp(m, m1, mlen) ) {
-            //printf("crypto_sign_open returned bad 'm' value\n");
+            printf("crypto_sign_open returned bad 'm' value\n");
             //return KAT_CRYPTO_FAILURE;
         }
 /*
@@ -262,7 +262,7 @@ main()
         free(sm);
 	free(sm_rsp);*/
 
-//    } while ( !done );
+    } while ( !done );
     
 #ifdef READFILE
     fclose(fp_rsp);

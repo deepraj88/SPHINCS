@@ -16,22 +16,35 @@
  * Computes the leaf at a given address. First generates the WOTS key pair,
  * then computes leaf by hashing horizontally.
  */
-static void wots_gen_leaf(unsigned char *leaf, const unsigned char *sk_seed,
-                          const unsigned char *pub_seed,
+void wots_gen_leaf(unsigned char leaf[SPX_N], const unsigned char sk_seed[2*SPX_N],
+                          const unsigned char pub_seed[SPX_N],
                           uint32_t addr_idx, const uint32_t tree_addr[8])
 {
-    unsigned char pk[SPX_WOTS_BYTES];
+    unsigned char pk[SPX_WOTS_BYTES] = {0};
     uint32_t wots_addr[8] = {0};
     uint32_t wots_pk_addr[8] = {0};
 
-    set_type(wots_addr, SPX_ADDR_TYPE_WOTS);
-    set_type(wots_pk_addr, SPX_ADDR_TYPE_WOTSPK);
+//    set_type(wots_addr, SPX_ADDR_TYPE_WOTS);
+    wots_addr[4] = SPX_ADDR_TYPE_WOTS;
+//    set_type(wots_pk_addr, SPX_ADDR_TYPE_WOTSPK);
+    wots_pk_addr[4] = SPX_ADDR_TYPE_WOTSPK;
 
-    copy_subtree_addr(wots_addr, tree_addr);
-    set_keypair_addr(wots_addr, addr_idx);
+//    copy_subtree_addr(wots_addr, tree_addr);
+    wots_addr[0] = tree_addr[0];
+    wots_addr[1] = tree_addr[1];
+    wots_addr[2] = tree_addr[2];
+    wots_addr[3] = tree_addr[3];
+//    set_keypair_addr(wots_addr, addr_idx);
+    wots_addr[5] = addr_idx;
     wots_gen_pk(pk, sk_seed, pub_seed, wots_addr);
 
-    copy_keypair_addr(wots_pk_addr, wots_addr);
+//    copy_keypair_addr(wots_pk_addr, wots_addr);
+    wots_pk_addr[0] = wots_addr[0];
+    wots_pk_addr[1] = wots_addr[1];
+    wots_pk_addr[2] = wots_addr[2];
+    wots_pk_addr[3] = wots_addr[3];
+//    wots_pk_addr[4] = wots_addr[4];
+    wots_pk_addr[5] = wots_addr[5];
     thash(leaf, pk, SPX_WOTS_LEN, pub_seed, wots_pk_addr);
 }
 
@@ -98,12 +111,14 @@ int crypto_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
     initialize_hash_function(pk, sk);
 
     /* Compute root node of the top-most subtree. */
-    treehash(sk + 3*SPX_N, auth_path, sk, sk + 2*SPX_N, 0, 0, SPX_TREE_HEIGHT,
-             wots_gen_leaf, top_tree_addr);
+    treehash_wots(sk + 3*SPX_N, auth_path, sk, sk + 2*SPX_N, 0, SPX_TREE_HEIGHT,
+              top_tree_addr);
+
+    //memcpy(pk + SPX_N, sk + 3*SPX_N, SPX_N);
 
     //memcpy(pk + SPX_N, sk + 3*SPX_N, SPX_N);
     for(loop=0;loop<SPX_N;loop++)
-    	sk[SPX_N+loop]=seed[3*SPX_N+loop];
+    	pk[SPX_N+loop]=sk[3*SPX_N+loop];
     return 0;
 }
 
@@ -166,31 +181,31 @@ int crypto_sign_signature(uint8_t sig[3300+CRYPTO_BYTES], unsigned long long sig
     set_keypair_addr(wots_addr, idx_leaf);
 
     /* Sign the message hash using FORS. */
-    //fors_sign(sig, root, mhash, sk_seed, pub_seed, wots_addr);
+    fors_sign(sig, root, mhash, sk_seed, pub_seed, wots_addr);
     sig += SPX_FORS_BYTES;
 
-//    for (i = 0; i < SPX_D; i++) {
-//        set_layer_addr(tree_addr, i);
-//        set_tree_addr(tree_addr, tree);
-//
-//        copy_subtree_addr(wots_addr, tree_addr);
-//        set_keypair_addr(wots_addr, idx_leaf);
-//
-//        /* Compute a WOTS signature. */
-//        wots_sign(sig, root, sk_seed, pub_seed, wots_addr);
-//        sig += SPX_WOTS_BYTES;
-//
-//        /* Compute the authentication path for the used WOTS leaf. */
-//        treehash(root, sig, sk_seed, pub_seed, idx_leaf, 0,
-//                 SPX_TREE_HEIGHT, wots_gen_leaf, tree_addr);
-//        sig += SPX_TREE_HEIGHT * SPX_N;
-//
-//        /* Update the indices for the next layer. */
-//        idx_leaf = (tree & ((1 << SPX_TREE_HEIGHT)-1));
-//        tree = tree >> SPX_TREE_HEIGHT;
-//    }
+    for (i = 0; i < SPX_D; i++) {
+        set_layer_addr(tree_addr, i);
+        set_tree_addr(tree_addr, tree);
 
-    *siglen = SPX_BYTES;
+        copy_subtree_addr(wots_addr, tree_addr);
+        set_keypair_addr(wots_addr, idx_leaf);
+
+        /* Compute a WOTS signature. */
+        wots_sign(sig, root, sk_seed, pub_seed, wots_addr);
+        sig += SPX_WOTS_BYTES;
+
+        /* Compute the authentication path for the used WOTS leaf. */
+        treehash_wots(root, sig, sk_seed, pub_seed, idx_leaf,
+                 SPX_TREE_HEIGHT, tree_addr);
+        sig += SPX_TREE_HEIGHT * SPX_N;
+
+        /* Update the indices for the next layer. */
+        idx_leaf = (tree & ((1 << SPX_TREE_HEIGHT)-1));
+        tree = tree >> SPX_TREE_HEIGHT;
+    }
+
+    siglen[0] = SPX_BYTES;
 
     return 0;
 }
@@ -253,6 +268,8 @@ int crypto_sign_verify(const uint8_t *sig, unsigned long long siglen,
         /* Initially, root is the FORS pk, but on subsequent iterations it is
            the root of the subtree below the currently processed subtree. */
         wots_pk_from_sig(wots_pk, sig, root, pub_seed, wots_addr);
+//        for(loop=0;loop<SPX_WOTS_BYTES;loop++)
+//        	printf("wots_pk[%d] = %x\n",loop,wots_pk[loop]);
         sig += SPX_WOTS_BYTES;
 
         /* Compute the leaf node using the WOTS public key. */
@@ -269,13 +286,15 @@ int crypto_sign_verify(const uint8_t *sig, unsigned long long siglen,
     }
 
     /* Check if the root node equals the root node in the public key. */
+
     for(loop=0;loop<SPX_N;loop++) {
     	if(root[loop] != pub_root[loop])
     		return -1;
     }
-    /*if (memcmp(root, pub_root, SPX_N)) {
-        return -1;
-    }*/
+
+//    if (memcmp(root, pub_root, SPX_N)) {
+//        return -1;
+//    }
 
     return 0;
 }
@@ -296,7 +315,7 @@ int crypto_sign(unsigned char sm[3300+CRYPTO_BYTES], unsigned long long smlen[1]
     //memmove(sm + SPX_BYTES, m, mlen);
     for(loop=0;loop<mlen;loop++)
     	sm[SPX_BYTES+loop] = m[loop];
-    *smlen = siglen + mlen;
+    smlen[0] = siglen + mlen;
 
     return 0;
 }
@@ -310,8 +329,11 @@ int crypto_sign_open(unsigned char m[3300+CRYPTO_BYTES], unsigned long long mlen
 {
     /* The API caller does not necessarily know what size a signature should be
        but SPHINCS+ signatures are always exactly SPX_BYTES. */
+	int loop;
     if (smlen < SPX_BYTES) {
-        memset(m, 0, smlen);
+        //memset(m, 0, smlen);
+        for(loop=0;loop<smlen;loop++)
+        	m[loop] = 0;
         *mlen = 0;
         return -1;
     }
@@ -319,13 +341,18 @@ int crypto_sign_open(unsigned char m[3300+CRYPTO_BYTES], unsigned long long mlen
     *mlen = smlen - SPX_BYTES;
 
     if (crypto_sign_verify(sm, SPX_BYTES, sm + SPX_BYTES, (unsigned long long)*mlen, pk)) {
-        memset(m, 0, smlen);
-        *mlen = 0;
+//        memset(m, 0, smlen);
+//        *mlen = 0;
+        for(loop=0;loop<3300+CRYPTO_BYTES;loop++)
+        	m[loop] = 0;
+        mlen[0] = 0;
         return -1;
     }
 
     /* If verification was successful, move the message to the right place. */
-    memmove(m, sm + SPX_BYTES, *mlen);
+    //memmove(m, sm + SPX_BYTES, *mlen);
+    for(loop=0;loop<mlen[0];loop++)
+    	m[loop] = sm[SPX_BYTES+loop];
 
     return 0;
 }

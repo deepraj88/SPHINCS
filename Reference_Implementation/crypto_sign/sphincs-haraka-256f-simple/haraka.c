@@ -10,7 +10,7 @@ Plain C implementation of the Haraka256 and Haraka512 permutations.
 
 #define HARAKAS_RATE 32
 
-static const unsigned char haraka_rc[40][16] = {
+ const unsigned char haraka_rc[40][16] = {
     {0x9d, 0x7b, 0x81, 0x75, 0xf0, 0xfe, 0xc5, 0xb2, 0x0a, 0xc0, 0x20, 0xe6, 0x4c, 0x70, 0x84, 0x06},
     {0x17, 0xf7, 0x08, 0x2f, 0xa4, 0x6b, 0x0f, 0x64, 0x6b, 0xa0, 0xf3, 0x88, 0xe1, 0xb4, 0x66, 0x8b},
     {0x14, 0x91, 0x02, 0x9f, 0x60, 0x9d, 0x02, 0xcf, 0x98, 0x84, 0xf2, 0x53, 0x2d, 0xde, 0x02, 0x34},
@@ -53,10 +53,10 @@ static const unsigned char haraka_rc[40][16] = {
     {0xa1, 0x9d, 0xc5, 0xe9, 0xfd, 0xbd, 0xd6, 0x4a, 0x88, 0x82, 0x28, 0x02, 0x03, 0xcc, 0x6a, 0x75}
 };
 
-static unsigned char rc[40][16];
-static unsigned char rc_sseed[40][16];
+unsigned char rc[40][16];
+unsigned char rc_sseed[40][16];
 
-static const unsigned char sbox[256] =
+const unsigned char sbox[256] =
 { 0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe,
   0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4,
   0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, 0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7,
@@ -84,10 +84,10 @@ static const unsigned char sbox[256] =
 void aesenc(unsigned char *s, const unsigned char *rk)
 {
     unsigned char i, t, u, v[4][4];
-    for (i = 0; i < 16; ++i) {
+    aesenc_label0:for (i = 0; i < 16; ++i) {
         v[((i / 4) + 4 - (i%4) ) % 4][i % 4] = sbox[s[i]];
     }
-    for (i = 0; i < 4; ++i) {
+    aesenc_label1:for (i = 0; i < 4; ++i) {
         t = v[i][0];
         u = v[i][0] ^ v[i][1] ^ v[i][2] ^ v[i][3];
         v[i][0] ^= u ^ XT(v[i][0] ^ v[i][1]);
@@ -95,7 +95,7 @@ void aesenc(unsigned char *s, const unsigned char *rk)
         v[i][2] ^= u ^ XT(v[i][2] ^ v[i][3]);
         v[i][3] ^= u ^ XT(v[i][3] ^ t);
     }
-    for (i = 0; i < 16; ++i) {
+    aesenc_label2:for (i = 0; i < 16; ++i) {
         s[i] = v[i / 4][i % 4] ^ rk[i];
     }
 }
@@ -104,41 +104,76 @@ void aesenc(unsigned char *s, const unsigned char *rk)
 void unpacklo32(unsigned char *t, unsigned char *a, unsigned char *b)
 {
     unsigned char tmp[16];
-    memcpy(tmp, a, 4);
-    memcpy(tmp + 4, b, 4);
-    memcpy(tmp + 8, a + 4, 4);
-    memcpy(tmp + 12, b + 4, 4);
-    memcpy(t, tmp, 16);
+    int loop;
+    for(loop=0;loop<4;loop++)
+    	tmp[loop] = a[loop];
+    for(loop=0;loop<4;loop++)
+    	tmp[4+loop] = b[loop];
+    for(loop=0;loop<4;loop++)
+    	tmp[8+loop] = a[4+loop];
+    for(loop=0;loop<4;loop++)
+    	tmp[12+loop] = b[4+loop];
+    for(loop=0;loop<16;loop++)
+    	t[loop] = tmp[loop];
+//    memcpy(tmp, a, 4);
+//    memcpy(tmp + 4, b, 4);
+//    memcpy(tmp + 8, a + 4, 4);
+//    memcpy(tmp + 12, b + 4, 4);
+//    memcpy(t, tmp, 16);
 }
 
 // Simulate _mm_unpackhi_epi32
 void unpackhi32(unsigned char *t, unsigned char *a, unsigned char *b)
 {
     unsigned char tmp[16];
-    memcpy(tmp, a + 8, 4);
-    memcpy(tmp + 4, b + 8, 4);
-    memcpy(tmp + 8, a + 12, 4);
-    memcpy(tmp + 12, b + 12, 4);
-    memcpy(t, tmp, 16);
+    int loop;
+
+//    memcpy(tmp, a + 8, 4);
+//    memcpy(tmp + 4, b + 8, 4);
+//    memcpy(tmp + 8, a + 12, 4);
+//    memcpy(tmp + 12, b + 12, 4);
+//    memcpy(t, tmp, 16);
+    for(loop=0;loop<4;loop++)
+    	tmp[loop] = a[8+loop];
+    for(loop=0;loop<4;loop++)
+    	tmp[4+loop] = b[8+loop];
+    for(loop=0;loop<4;loop++)
+    	tmp[8+loop] = a[12+loop];
+    for(loop=0;loop<4;loop++)
+    	tmp[12+loop] = b[12+loop];
+    for(loop=0;loop<16;loop++)
+    	t[loop] = tmp[loop];
+
 }
 
 void tweak_constants(const unsigned char *pk_seed, const unsigned char *sk_seed,
                      unsigned long long seed_length)
 {
     unsigned char buf[40*16];
+    int loop,loop2;
 
     /* Use the standard constants to generate tweaked ones. */
-    memcpy(rc, haraka_rc, 40*16);
+    //memcpy(rc, haraka_rc, 40*16);
+    for(loop=0;loop<40;loop++)
+        for(loop2=0;loop2<16;loop2++)
+        	rc[loop][loop2] = haraka_rc[loop][loop2];
+
 
     /* Constants for sk.seed */
     if (sk_seed != NULL) {
         haraka_S(buf, 40*16, sk_seed, seed_length);
-        memcpy(rc_sseed, buf, 40*16);
+        //memcpy(rc_sseed, buf, 40*16);
+        for(loop=0;loop<40;loop++)
+            for(loop2=0;loop2<16;loop2++)
+            	rc_sseed[loop][loop2] = buf[loop*16+loop2];
     }
 
     /* Constants for pk.seed */
     haraka_S(buf, 40*16, pk_seed, seed_length);
-    memcpy(rc, buf, 40*16);
+    //memcpy(rc, buf, 40*16);
+    for(loop=0;loop<40;loop++)
+        for(loop2=0;loop2<16;loop2++)
+        	rc[loop][loop2] = buf[loop*16+loop2];;
 }
 
 static void haraka_S_absorb(unsigned char *s, unsigned int r,
@@ -174,9 +209,12 @@ static void haraka_S_absorb(unsigned char *s, unsigned int r,
 static void haraka_S_squeezeblocks(unsigned char *h, unsigned long long nblocks,
                                    unsigned char *s, unsigned int r)
 {
+	int loop;
     while (nblocks > 0) {
         haraka512_perm(s, s);
-        memcpy(h, s, HARAKAS_RATE);
+        //memcpy(h, s, HARAKAS_RATE);
+        for(loop=0;loop<HARAKAS_RATE;loop++)
+        	h[loop] = s[loop];
         h += r;
         nblocks--;
     }
@@ -278,14 +316,16 @@ void haraka_S(unsigned char *out, unsigned long long outlen,
 void haraka512_perm(unsigned char *out, const unsigned char *in)
 {
     int i, j;
-
+    int loop;
     unsigned char s[64], tmp[16];
 
-    memcpy(s, in, 16);
-    memcpy(s + 16, in + 16, 16);
-    memcpy(s + 32, in + 32, 16);
-    memcpy(s + 48, in + 48, 16);
+    for(loop=0;loop<64;loop++)
+    	s[loop] = in[loop];
 
+//    memcpy(s, in, 16);
+//    memcpy(s + 16, in + 16, 16);
+//    memcpy(s + 32, in + 32, 16);
+//    memcpy(s + 48, in + 48, 16);
     for (i = 0; i < 5; ++i) {
         // aes round(s)
         for (j = 0; j < 2; ++j) {
@@ -294,7 +334,6 @@ void haraka512_perm(unsigned char *out, const unsigned char *in)
             aesenc(s + 32, rc[4*2*i + 4*j + 2]);
             aesenc(s + 48, rc[4*2*i + 4*j + 3]);
         }
-
         // mixing
         unpacklo32(tmp, s, s + 16);
         unpackhi32(s, s, s + 16);
@@ -306,26 +345,38 @@ void haraka512_perm(unsigned char *out, const unsigned char *in)
         unpacklo32(s + 16, s + 16, tmp);
     }
 
-    memcpy(out, s, 64);
+    //memcpy(out, s, 64);
+    for(loop=0;loop<64;loop++)
+    	out[loop] = s[loop];
 }
 
-void haraka512(unsigned char *out, const unsigned char *in)
+void haraka512(unsigned char out[64], const unsigned char in[64])
 {
     int i;
+    int loop;
 
     unsigned char buf[64];
 
     haraka512_perm(buf, in);
     /* Feed-forward */
-    for (i = 0; i < 64; i++) {
+    haraka512_label3:for (i = 0; i < 64; i++) {
         buf[i] = buf[i] ^ in[i];
     }
 
     /* Truncated */
-    memcpy(out,      buf + 8, 8);
-    memcpy(out + 8,  buf + 24, 8);
-    memcpy(out + 16, buf + 32, 8);
-    memcpy(out + 24, buf + 48, 8);
+    haraka512_label4:for(loop=0;loop<8;loop++)
+    	out[loop] = buf[8+loop];
+    haraka512_label5:for(loop=0;loop<8;loop++)
+    	out[loop+8] = buf[24+loop];
+    haraka512_label6:for(loop=0;loop<8;loop++)
+    	out[loop+16] = buf[32+loop];
+    haraka512_label7:for(loop=0;loop<8;loop++)
+    	out[loop+24] = buf[48+loop];
+
+//    memcpy(out,      buf + 8, 8);
+//    memcpy(out + 8,  buf + 24, 8);
+//    memcpy(out + 16, buf + 32, 8);
+//    memcpy(out + 24, buf + 48, 8);
 }
 
 
@@ -360,11 +411,14 @@ void haraka256(unsigned char *out, const unsigned char *in)
 void haraka256_sk(unsigned char *out, const unsigned char *in)
 {
     int i, j;
+    int loop;
 
     unsigned char s[32], tmp[16];
 
-    memcpy(s, in, 16);
-    memcpy(s + 16, in + 16, 16);
+//    memcpy(s, in, 16);
+//    memcpy(s + 16, in + 16, 16);
+    for(loop=0;loop<32;loop++)
+    	s[loop] = in[loop];
 
     for (i = 0; i < 5; ++i) {
         // aes round(s)
@@ -376,7 +430,9 @@ void haraka256_sk(unsigned char *out, const unsigned char *in)
         // mixing
         unpacklo32(tmp, s, s + 16);
         unpackhi32(s + 16, s, s + 16);
-        memcpy(s, tmp, 16);
+//        memcpy(s, tmp, 16);
+        for(loop=0;loop<16;loop++)
+        	s[loop] = tmp[loop];
     }
 
     /* Feed-forward */

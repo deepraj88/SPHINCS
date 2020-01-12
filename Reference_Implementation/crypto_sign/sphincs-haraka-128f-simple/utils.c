@@ -45,17 +45,26 @@ void compute_root(unsigned char *root, const unsigned char *leaf,
                   const unsigned char *pub_seed, uint32_t addr[8])
 {
     uint32_t i;
+    int loop;
     unsigned char buffer[2 * SPX_N];
 
     /* If leaf_idx is odd (last bit = 1), current path element is a right child
        and auth_path has to go left. Otherwise it is the other way around. */
     if (leaf_idx & 1) {
-        memcpy(buffer + SPX_N, leaf, SPX_N);
-        memcpy(buffer, auth_path, SPX_N);
-    }
-    else {
-        memcpy(buffer, leaf, SPX_N);
-        memcpy(buffer + SPX_N, auth_path, SPX_N);
+    	//        memcpy(buffer + SPX_N, leaf, SPX_N);
+    	//        memcpy(buffer, auth_path, SPX_N);
+    	    	for(loop=0;loop<SPX_N;loop++)
+    	    		buffer[SPX_N+loop] = leaf[loop];
+    	    	for(loop=0;loop<SPX_N;loop++)
+    	    		buffer[loop]=auth_path[loop];
+    	    }
+    	    else {
+    	//        memcpy(buffer, leaf, SPX_N);
+    	//        memcpy(buffer + SPX_N, auth_path, SPX_N);
+    	    	for(loop=0;loop<SPX_N;loop++)
+    	    		buffer[loop]=leaf[loop];
+    	    	for(loop=0;loop<SPX_N;loop++)
+    	    		buffer[SPX_N+loop]=auth_path[loop];
     }
     auth_path += SPX_N;
 
@@ -69,11 +78,15 @@ void compute_root(unsigned char *root, const unsigned char *leaf,
         /* Pick the right or left neighbor, depending on parity of the node. */
         if (leaf_idx & 1) {
             thash(buffer + SPX_N, buffer, 2, pub_seed, addr);
-            memcpy(buffer, auth_path, SPX_N);
-        }
-        else {
-            thash(buffer, buffer, 2, pub_seed, addr);
-            memcpy(buffer + SPX_N, auth_path, SPX_N);
+            //            memcpy(buffer, auth_path, SPX_N);
+                        for(loop=0;loop<SPX_N;loop++)
+                        	buffer[loop]=auth_path[loop];
+                    }
+                    else {
+                        thash(buffer, buffer, 2, pub_seed, addr);
+            //            memcpy(buffer + SPX_N, auth_path, SPX_N);
+                        for(loop=0;loop<SPX_N;loop++)
+                        	buffer[SPX_N+loop]=auth_path[loop];
         }
         auth_path += SPX_N;
     }
@@ -94,26 +107,77 @@ void compute_root(unsigned char *root, const unsigned char *leaf,
  * Applies the offset idx_offset to indices before building addresses, so that
  * it is possible to continue counting indices across trees.
  */
-void treehash(unsigned char *root, unsigned char *auth_path,
+void treehash_wots(unsigned char *root, unsigned char *auth_path,
               const unsigned char *sk_seed, const unsigned char *pub_seed,
-              uint32_t leaf_idx, uint32_t idx_offset, uint32_t tree_height,
-              void (*gen_leaf)(
-                 unsigned char* /* leaf */,
-                 const unsigned char* /* sk_seed */,
-                 const unsigned char* /* pub_seed */,
-                 uint32_t /* addr_idx */, const uint32_t[8] /* tree_addr */),
+              uint32_t leaf_idx, uint32_t tree_height,
               uint32_t tree_addr[8])
 {
-    unsigned char stack[(tree_height + 1)*SPX_N];
-    unsigned int heights[tree_height + 1];
+    unsigned char stack[(/*tree_height*/3 + 1)*SPX_N];
+    unsigned int heights[/*tree_height*/3 + 1];
     unsigned int offset = 0;
     uint32_t idx;
     uint32_t tree_idx;
     int loop;
 
-    for (idx = 0; idx < (uint32_t)(1 << tree_height); idx++) {
+    for (idx = 0; idx < 8/*(uint32_t)(1 << tree_height)*/; idx++) {
         /* Add the next leaf node to the stack. */
-        gen_leaf(stack + offset*SPX_N,
+        wots_gen_leaf(stack + offset*SPX_N,
+                 sk_seed, pub_seed, idx, tree_addr);
+        offset++;
+        heights[offset - 1] = 0;
+
+        /* If this is a node we need for the auth path.. */
+        if ((leaf_idx ^ 0x1) == idx) {
+            //memcpy(auth_path, stack + (offset - 1)*SPX_N, SPX_N);
+        	for(loop=0;loop<SPX_N;loop++)
+        		auth_path[loop] = stack[(offset - 1)*SPX_N + loop];
+        }
+
+        /* While the top-most nodes are of equal height.. */
+        while (offset >= 2 && heights[offset - 1] == heights[offset - 2]) {
+            /* Compute index of the new node, in the next layer. */
+            tree_idx = (idx >> (heights[offset - 1] + 1));
+
+            /* Set the address of the node we're creating. */
+            set_tree_height(tree_addr, heights[offset - 1] + 1);
+            set_tree_index(tree_addr,
+                           tree_idx);
+            /* Hash the top-most nodes from the stack together. */
+            thash(stack + (offset - 2)*SPX_N,
+                  stack + (offset - 2)*SPX_N, 2, pub_seed, tree_addr);
+            offset--;
+            /* Note that the top-most node is now one layer higher. */
+            heights[offset - 1]++;
+
+            /* If this is a node we need for the auth path.. */
+            if (((leaf_idx >> heights[offset - 1]) ^ 0x1) == tree_idx) {
+                //memcpy(auth_path + heights[offset - 1]*SPX_N,
+                       //stack + (offset - 1)*SPX_N, SPX_N);
+            	for(loop=0;loop<SPX_N;loop++)
+            		auth_path[heights[offset - 1]*SPX_N + loop] = stack[(offset - 1)*SPX_N + loop];
+            }
+        }
+    }
+    //memcpy(root, stack, SPX_N);
+	for(loop=0;loop<SPX_N;loop++)
+		root[loop] = stack[loop];
+}
+
+void treehash_fors(unsigned char *root, unsigned char auth_path[SPX_N],
+              const unsigned char *sk_seed, const unsigned char *pub_seed,
+              uint32_t leaf_idx, uint32_t idx_offset, uint32_t tree_height,
+              uint32_t tree_addr[8])
+{
+    unsigned char stack[(/*tree_height*/9 + 1)*SPX_N];
+    unsigned int heights[/*tree_height*/9 + 1];
+    unsigned int offset = 0;
+    uint32_t idx;
+    uint32_t tree_idx;
+    int loop;
+
+    for (idx = 0; idx < 512/*(uint32_t)(1 << tree_height)*/; idx++) {
+        /* Add the next leaf node to the stack. */
+        fors_gen_leaf(stack + offset*SPX_N,
                  sk_seed, pub_seed, idx + idx_offset, tree_addr);
         offset++;
         heights[offset - 1] = 0;

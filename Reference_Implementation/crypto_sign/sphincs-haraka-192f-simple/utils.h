@@ -32,14 +32,31 @@ void compute_root(unsigned char *root, const unsigned char *leaf,
  * Applies the offset idx_offset to indices before building addresses, so that
  * it is possible to continue counting indices across trees.
  */
-void treehash(unsigned char *root, unsigned char *auth_path,
+void treehash_wots(unsigned char *root, unsigned char *auth_path,
               const unsigned char *sk_seed, const unsigned char *pub_seed,
-              uint32_t leaf_idx, uint32_t idx_offset, uint32_t tree_height,
-              void (*gen_leaf)(
-                 unsigned char* /* leaf */,
-                 const unsigned char* /* sk_seed */,
-                 const unsigned char* /* pub_seed */,
-                 uint32_t /* addr_idx */, const uint32_t[8] /* tree_addr */),
+              uint32_t leaf_idx, uint32_t tree_height,
+//              void (*gen_leaf)(
+//                 unsigned char* /* leaf */,
+//                 const unsigned char* /* sk_seed */,
+//                 const unsigned char* /* pub_seed */,
+//                 uint32_t /* addr_idx */, const uint32_t[8] /* tree_addr */),
               uint32_t tree_addr[8]);
 
+void treehash_fors(unsigned char *root, unsigned char *auth_path,
+              const unsigned char *sk_seed, const unsigned char *pub_seed,
+              uint32_t leaf_idx, uint32_t idx_offset, uint32_t tree_height,
+//              void (*gen_leaf)(
+//                 unsigned char* /* leaf */,
+//                 const unsigned char* /* sk_seed */,
+//                 const unsigned char* /* pub_seed */,
+//                 uint32_t /* addr_idx */, const uint32_t[8] /* tree_addr */),
+              uint32_t tree_addr[8]);
+
+void fors_gen_leaf(unsigned char *leaf, const unsigned char *sk_seed,
+                          const unsigned char *pub_seed,
+                          uint32_t addr_idx, const uint32_t fors_tree_addr[8]);
+
+void wots_gen_leaf(unsigned char *leaf, const unsigned char *sk_seed,
+                          const unsigned char *pub_seed,
+                          uint32_t addr_idx, const uint32_t tree_addr[8]);
 #endif

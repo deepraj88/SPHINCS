@@ -2,19 +2,13 @@
     <checksum>
         <value string="false"/>
     </checksum>
-    <downStreamTool>
-        <DownStreamTool name="vivado"/>
-    </downStreamTool>
-    <clockList>
-        <clock name="default" period="10"/>
-    </clockList>
     <config>
+        <schedule model="crypto_sign_keypair"/>
         <config_compile blackbox="" no_signed_zeros="0" unsafe_math_optimizations="0"/>
         <config_interface clock_enable="0" expose_global="1" m_axi_addr64="0" m_axi_offset="off" register_io="off" trim_dangling_port="0"/>
-        <schedule model="crypto_sign_keypair"/>
     </config>
     <UIConfigurations>
-        <UIAutosynConf boardInfo="Artix-7 AC701 Evaluation Platform (xc7a200tfbg676-2) " hideTrivialOp="true" isBasedOnBoard="true" isSolutionDirty="false" isStopAskAgain="false" showDetailDesignViewer="false">
+        <UIAutosynConf boardInfo="Artix-7 AC701 Evaluation Platform (xc7a200tfbg676-2) " hideTrivialOp="true" isBasedOnBoard="true" isSolutionDirty="true" isStopAskAgain="false" showDetailDesignViewer="false">
             <Platform>xilinx/artix7/artix7</Platform>
             <Platform>xilinx/artix7/artix7_fpv6</Platform>
             <customLibs/>
@@ -53,7 +47,7 @@
         <Format formatName="pcore" use_netlist="none"/>
     </ExportDesign>
     <Simulation argv="">
-        <SimFlow askAgain="true" clangSanitizer="false" compile="false" compileChoice="gcc" disableDeadlockDetect="false" dumpTrace="none" name="cosim" optimizeCompile="false" reduce_diskspace="false" setup="false" toolName="auto" waveDebug="false" ldflags="" mflags="" compiledLibrary="">
+        <SimFlow askAgain="true" clangSanitizer="false" compile="false" compileChoice="gcc" dumpTrace="none" name="cosim" optimizeCompile="false" reduce_diskspace="false" setup="false" toolName="auto" waveDebug="false" ldflags="" mflags="" compiledLibrary="">
             <Rtl active="false" name="systemc"/>
             <Rtl active="true" name="verilog"/>
             <Rtl active="false" name="vhdl"/>
@@ -72,5 +66,11 @@
         <library name="DefaultPlatform" value="xilinx/artix7/artix7"/>
         <library name="DefaultPlatform" value="xilinx/artix7/artix7_fpv6"/>
     </libraryList>
+    <downStreamTool>
+        <DownStreamTool name="vivado"/>
+    </downStreamTool>
+    <clockList>
+        <clock name="default" default="false" period="10"/>
+    </clockList>
 </solution>
 

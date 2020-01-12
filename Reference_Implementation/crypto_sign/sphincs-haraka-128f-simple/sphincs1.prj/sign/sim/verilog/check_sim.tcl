@@ -1,5 +1,5 @@
 # ==============================================================
-# File generated on Sat Oct 26 19:30:49 EDT 2019
+# File generated on Mon Nov 25 13:05:41 EST 2019
 # Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2018.3 (64-bit)
 # SW Build 2405991 on Thu Dec  6 23:36:41 MST 2018
 # IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
@@ -83,20 +83,12 @@ proc check_tvin_file {} {
 		puts stdout "[debug_prompt arg check_sim.tcl] start...";
 	}
     set rtlfilelist {
-         "c.crypto_sign.autotvin_sm.dat"
-         "c.crypto_sign.autotvin_smlen.dat"
-         "c.crypto_sign.autotvin_m.dat"
-         "c.crypto_sign.autotvin_mlen.dat"
-         "c.crypto_sign.autotvin_sk.dat"
-         "c.crypto_sign.autotvin_DRBG_ctx_V.dat"
-         "c.crypto_sign.autotvin_DRBG_ctx_Key.dat"
-         "c.crypto_sign.autotvin_DRBG_ctx_reseed_counter.dat"
-         "c.crypto_sign.autotvout_sm.dat"
-         "c.crypto_sign.autotvout_smlen.dat"
-         "c.crypto_sign.autotvout_DRBG_ctx_V.dat"
-         "c.crypto_sign.autotvout_DRBG_ctx_Key.dat"
-         "c.crypto_sign.autotvout_DRBG_ctx_reseed_counter.dat"
-         "c.crypto_sign.autotvout_ap_return.dat"
+         "c.fors_sign.autotvin_sig.dat"
+         "c.fors_sign.autotvin_pk.dat"
+         "c.fors_sign.autotvin_m.dat"
+         "c.fors_sign.autotvin_fors_addr.dat"
+         "c.fors_sign.autotvout_sig.dat"
+         "c.fors_sign.autotvout_pk.dat"
     }
     foreach rtlfile $rtlfilelist {
         if {[file isfile $rtlfile]} {
@@ -121,12 +113,8 @@ proc check_tvout_file {} {
 		puts stdout "[debug_prompt arg check_sim.tcl] start...";
 	}
     set rtlfilelist {
-         "rtl.crypto_sign.autotvout_sm.dat"
-         "rtl.crypto_sign.autotvout_smlen.dat"
-         "rtl.crypto_sign.autotvout_DRBG_ctx_V.dat"
-         "rtl.crypto_sign.autotvout_DRBG_ctx_Key.dat"
-         "rtl.crypto_sign.autotvout_DRBG_ctx_reseed_counter.dat"
-         "rtl.crypto_sign.autotvout_ap_return.dat"
+         "rtl.fors_sign.autotvout_sig.dat"
+         "rtl.fors_sign.autotvout_pk.dat"
     }
     foreach rtlfile $rtlfilelist {
         if {[file isfile $rtlfile]} {

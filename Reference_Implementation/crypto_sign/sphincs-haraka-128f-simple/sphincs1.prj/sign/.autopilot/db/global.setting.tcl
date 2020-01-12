@@ -1,5 +1,5 @@
 
-set TopModule "crypto_sign"
+set TopModule "fors_sign"
 set ClockPeriod 10
 set ClockList ap_clk
 set HasVivadoClockPeriod 0
@@ -40,9 +40,9 @@ set SCTraceFileName mytrace
 set SCTraceFileFormat vcd
 set SCTraceOption all
 set TargetInfo xc7a200t:fbg676:-2
-set SourceFiles {sc {} c {../../address.c ../../aes.c ../../fors.c ../../haraka.c ../../hash_haraka.c ../../rng.c ../../sign.c ../../thash_haraka_simple.c ../../utils.c ../../wots.c}}
+set SourceFiles {sc {} c {../../wots.c ../../utils.c ../../thash_haraka_simple.c ../../sign.c ../../rng.c ../../hash_haraka.c ../../haraka.c ../../fors.c ../../aes.c ../../address.c}}
 set SourceFlags {sc {} c {{} {} {} {} {} {} {} {} {} {}}}
-set DirectiveFile /home/dss545/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple/sphincs1.prj/sign/sign.directive
+set DirectiveFile /home/dss545/vivado_hls/SPHINCS+/128f_check4/sphincs1.prj/sign/sign.directive
 set TBFiles {verilog ../../newtest_sign.c bc ../../newtest_sign.c vhdl ../../newtest_sign.c sc ../../newtest_sign.c cas ../../newtest_sign.c c {}}
 set SpecLanguage C
 set TVInFiles {bc {} c {} sc {} cas {} vhdl {} verilog {}}

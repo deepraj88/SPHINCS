@@ -24,12 +24,18 @@ void prf_addr(unsigned char *out, const unsigned char *key,
 {
     unsigned char buf[SPX_N + SPX_SHA256_ADDR_BYTES];
     unsigned char outbuf[SPX_SHA256_OUTPUT_BYTES];
+    int loop;
 
-    memcpy(buf, key, SPX_N);
+    //memcpy(buf, key, SPX_N);
+    for(loop=0;loop<SPX_N;loop++)
+    	buf[loop] = key[loop];
+
     compress_address(buf + SPX_N, addr);
 
     sha256(outbuf, buf, SPX_N + SPX_SHA256_ADDR_BYTES);
-    memcpy(out, outbuf, SPX_N);
+    //memcpy(out, outbuf, SPX_N);
+    for(loop=0;loop<SPX_N;loop++)
+    	out[loop] = outbuf[loop];
 }
 
 /**

@@ -4,24 +4,24 @@
 ## Copyright (C) 1986-2018 Xilinx, Inc. All Rights Reserved.
 ############################################################
 open_project sphincs1.prj
-set_top crypto_sign
-add_files wots.c
-add_files utils.c
-add_files thash_haraka_simple.c
-add_files sign.c
-add_files rng.c
-add_files hash_haraka.c
-add_files haraka.c
-add_files fors.c
-add_files aes.c
+set_top crypto_sign_open
 add_files address.c
-add_files -tb newtest_sign.c -cflags "-Wno-unknown-pragmas"
+add_files aes.c
+add_files fors.c
+add_files haraka.c
+add_files hash_haraka.c
+add_files rng.c
+add_files sign.c
+add_files thash_haraka_simple.c
+add_files utils.c
+add_files wots.c
+add_files -tb newtest_sign.c
 open_solution "keypair"
 set_part {xc7a200tfbg676-2} -tool vivado
 create_clock -period 10 -name default
-config_compile -no_signed_zeros=0 -unsafe_math_optimizations=0
-config_interface -clock_enable=0 -expose_global -m_axi_addr64=0 -m_axi_offset off -register_io off -trim_dangling_port=0
-#source "./sphincs1.prj/keypair/directives.tcl"
+config_compile  
+config_interface  -expose_global  -m_axi_offset off -register_io off 
+source "./sphincs1.prj/keypair/directives.tcl"
 csim_design
 csynth_design
 cosim_design

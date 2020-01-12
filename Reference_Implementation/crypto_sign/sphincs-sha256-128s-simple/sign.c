@@ -80,15 +80,19 @@ int crypto_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
        in one function. */
     unsigned char auth_path[SPX_TREE_HEIGHT * SPX_N];
     uint32_t top_tree_addr[8] = {0};
+    int loop;
 
     set_layer_addr(top_tree_addr, SPX_D - 1);
     set_type(top_tree_addr, SPX_ADDR_TYPE_HASHTREE);
 
     /* Initialize SK_SEED, SK_PRF and PUB_SEED from seed. */
-    memcpy(sk, seed, CRYPTO_SEEDBYTES);
+    //memcpy(sk, seed, CRYPTO_SEEDBYTES);
+    for(loop=0;loop<CRYPTO_SEEDBYTES;loop++)
+    	sk[loop]=seed[loop];
 
-    memcpy(pk, sk + 2*SPX_N, SPX_N);
-
+    //memcpy(pk, sk + 2*SPX_N, SPX_N);
+    for(loop=0;loop<SPX_N;loop++)
+    	pk[loop]=sk[2*SPX_N+loop];
     /* This hook allows the hash function instantiation to do whatever
        preparation or computation it needs, based on the public seed. */
     initialize_hash_function(pk, sk);
@@ -97,8 +101,11 @@ int crypto_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
     treehash(sk + 3*SPX_N, auth_path, sk, sk + 2*SPX_N, 0, 0, SPX_TREE_HEIGHT,
              wots_gen_leaf, top_tree_addr);
 
-    memcpy(pk + SPX_N, sk + 3*SPX_N, SPX_N);
+    //memcpy(pk + SPX_N, sk + 3*SPX_N, SPX_N);
 
+    //memcpy(pk + SPX_N, sk + 3*SPX_N, SPX_N);
+    for(loop=0;loop<SPX_N;loop++)
+    	pk[SPX_N+loop]=sk[3*SPX_N+loop];
     return 0;
 }
 
@@ -107,7 +114,7 @@ int crypto_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
  * Format sk: [SK_SEED || SK_PRF || PUB_SEED || root]
  * Format pk: [PUB_SEED || root]
  */
-int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
+int crypto_sign_keypair(unsigned char pk[SPX_PK_BYTES], unsigned char sk[SPX_SK_BYTES])
 {
   unsigned char seed[CRYPTO_SEEDBYTES];
   randombytes(seed, CRYPTO_SEEDBYTES);
@@ -119,8 +126,11 @@ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
 /**
  * Returns an array containing a detached signature.
  */
-int crypto_sign_signature(uint8_t *sig, size_t *siglen,
-                          const uint8_t *m, size_t mlen, const uint8_t *sk)
+int crypto_sign_signature(uint8_t sig[3300+CRYPTO_BYTES], unsigned long long siglen[1],
+                const uint8_t m[3300], unsigned long long mlen,
+                const uint8_t sk[SPX_SK_BYTES])
+//int crypto_sign_signature(uint8_t *sig, unsigned long long *siglen,
+//                          const uint8_t *m, unsigned long long mlen, const uint8_t *sk)
 {
     const unsigned char *sk_seed = sk;
     const unsigned char *sk_prf = sk + SPX_N;
@@ -190,8 +200,8 @@ int crypto_sign_signature(uint8_t *sig, size_t *siglen,
 /**
  * Verifies a detached signature and message under a given public key.
  */
-int crypto_sign_verify(const uint8_t *sig, size_t siglen,
-                       const uint8_t *m, size_t mlen, const uint8_t *pk)
+int crypto_sign_verify(const uint8_t *sig, unsigned long long siglen,
+                       const uint8_t *m, unsigned long long mlen, const uint8_t *pk)
 {
     const unsigned char *pub_seed = pk;
     const unsigned char *pub_root = pk + SPX_N;
@@ -271,15 +281,18 @@ int crypto_sign_verify(const uint8_t *sig, size_t siglen,
 /**
  * Returns an array containing the signature followed by the message.
  */
-int crypto_sign(unsigned char *sm, unsigned long long *smlen,
-                const unsigned char *m, unsigned long long mlen,
-                const unsigned char *sk)
+int crypto_sign(unsigned char sm[3300+CRYPTO_BYTES], unsigned long long smlen[1],
+                const unsigned char m[3300], unsigned long long mlen,
+                const unsigned char sk[SPX_SK_BYTES])
 {
-    size_t siglen;
+    unsigned long long siglen;
+    int loop;
 
-    crypto_sign_signature(sm, &siglen, m, (size_t)mlen, sk);
+    crypto_sign_signature(sm, &siglen, m, mlen, sk);
 
-    memmove(sm + SPX_BYTES, m, mlen);
+    //memmove(sm + SPX_BYTES, m, mlen);
+    for(loop=0;loop<mlen;loop++)
+    	sm[SPX_BYTES+loop] = m[loop];
     *smlen = siglen + mlen;
 
     return 0;
@@ -288,12 +301,13 @@ int crypto_sign(unsigned char *sm, unsigned long long *smlen,
 /**
  * Verifies a given signature-message pair under a given public key.
  */
-int crypto_sign_open(unsigned char *m, unsigned long long *mlen,
-                     const unsigned char *sm, unsigned long long smlen,
-                     const unsigned char *pk)
+int crypto_sign_open(unsigned char m[3300+CRYPTO_BYTES], unsigned long long mlen[1],
+                     const unsigned char sm[3300+CRYPTO_BYTES], unsigned long long smlen,
+                     const unsigned char pk[SPX_PK_BYTES])
 {
     /* The API caller does not necessarily know what size a signature should be
        but SPHINCS+ signatures are always exactly SPX_BYTES. */
+	int loop;
     if (smlen < SPX_BYTES) {
         memset(m, 0, smlen);
         *mlen = 0;
@@ -302,9 +316,12 @@ int crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 
     *mlen = smlen - SPX_BYTES;
 
-    if (crypto_sign_verify(sm, SPX_BYTES, sm + SPX_BYTES, (size_t)*mlen, pk)) {
-        memset(m, 0, smlen);
-        *mlen = 0;
+    if (crypto_sign_verify(sm, SPX_BYTES, sm + SPX_BYTES, (unsigned long long)*mlen, pk)) {
+//        memset(m, 0, smlen);
+//        *mlen = 0;
+        for(loop=0;loop<3300+CRYPTO_BYTES;loop++)
+        	m[loop] = 0;
+        mlen[0] = 0;
         return -1;
     }
 

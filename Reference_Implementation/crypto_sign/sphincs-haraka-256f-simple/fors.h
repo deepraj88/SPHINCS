@@ -9,9 +9,9 @@
  * Signs a message m, deriving the secret key from sk_seed and the FTS address.
  * Assumes m contains at least SPX_FORS_HEIGHT * SPX_FORS_TREES bits.
  */
-void fors_sign(unsigned char *sig, unsigned char *pk,
-               const unsigned char *m,
-               const unsigned char *sk_seed, const unsigned char *pub_seed,
+void fors_sign(unsigned char sig[SPX_FORS_BYTES], unsigned char pk[SPX_N],
+               const unsigned char m[SPX_FORS_MSG_BYTES],
+               const unsigned char sk_seed[SPX_SK_BYTES], const unsigned char pub_seed[SPX_SK_BYTES-2*SPX_N],
                const uint32_t fors_addr[8]);
 
 /**

@@ -1,5 +1,5 @@
 # ==============================================================
-# File generated on Sat Oct 26 19:30:36 EDT 2019
+# File generated on Mon Nov 25 13:05:02 EST 2019
 # Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2018.3 (64-bit)
 # SW Build 2405991 on Thu Dec  6 23:36:41 MST 2018
 # IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
@@ -144,10 +144,10 @@ proc sim {} {
 	set dirAutoSimVlogGate   "$dirAutoSimRoot/verilog.gate"
 	set dirAutoSimWrapc      "$dirAutoSimRoot/wrapc"
 	set gWorkingDir          "../.."
-	set constFileTvIn        "crypto_sign.autotvin.dat"
-	set constFileTvOut       "crypto_sign.autotvout.dat"
-	set constFileHdlTvIn     "crypto_sign.autohdltvin.dat"
-	set constFileHdlTvOut    "crypto_sign.autohdltvout.dat"
+	set constFileTvIn        "fors_sign.autotvin.dat"
+	set constFileTvOut       "fors_sign.autotvout.dat"
+	set constFileHdlTvIn     "fors_sign.autohdltvin.dat"
+	set constFileHdlTvOut    "fors_sign.autohdltvout.dat"
 	set gGateLevelSim        "0"
 	set gAutowrap            "1"
 	set gTool                "modelsim"

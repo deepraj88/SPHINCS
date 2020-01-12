@@ -74,4 +74,9 @@ int crypto_sign_open(unsigned char m[3300+CRYPTO_BYTES], unsigned long long mlen
                      const unsigned char sm[3300+CRYPTO_BYTES], unsigned long long smlen,
                      const unsigned char pk[SPX_PK_BYTES]);
 
+#define ONLY_KEYPAIR
+//#define ONLY_SIGN_
+//#define ONLY_SIGN_OPEN
+//#define ONLY_KEYPAIR
+#define READFILE
 #endif

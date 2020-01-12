@@ -21,7 +21,7 @@ static void fors_sk_to_leaf(unsigned char *leaf, const unsigned char *sk,
     thash(leaf, sk, 1, pub_seed, fors_leaf_addr);
 }
 
-static void fors_gen_leaf(unsigned char *leaf, const unsigned char *sk_seed,
+void fors_gen_leaf(unsigned char *leaf, const unsigned char *sk_seed,
                           const unsigned char *pub_seed,
                           uint32_t addr_idx, const uint32_t fors_tree_addr[8])
 {
@@ -59,9 +59,9 @@ static void message_to_indices(uint32_t *indices, const unsigned char *m)
  * Signs a message m, deriving the secret key from sk_seed and the FTS address.
  * Assumes m contains at least SPX_FORS_HEIGHT * SPX_FORS_TREES bits.
  */
-void fors_sign(unsigned char *sig, unsigned char *pk,
-               const unsigned char *m,
-               const unsigned char *sk_seed, const unsigned char *pub_seed,
+void fors_sign(unsigned char sig[SPX_FORS_BYTES], unsigned char pk[SPX_N],
+               const unsigned char m[SPX_FORS_MSG_BYTES],
+               const unsigned char sk_seed[SPX_SK_BYTES], const unsigned char pub_seed[SPX_SK_BYTES-2*SPX_N],
                const uint32_t fors_addr[8])
 {
     uint32_t indices[SPX_FORS_TREES];
@@ -90,8 +90,8 @@ void fors_sign(unsigned char *sig, unsigned char *pk,
         sig += SPX_N;
 
         /* Compute the authentication path for this leaf node. */
-        treehash(roots + i*SPX_N, sig, sk_seed, pub_seed,
-                 indices[i], idx_offset, SPX_FORS_HEIGHT, fors_gen_leaf,
+        treehash_fors(roots + i*SPX_N, sig, sk_seed, pub_seed,
+                 indices[i], idx_offset, SPX_FORS_HEIGHT,
                  fors_tree_addr);
         sig += SPX_N * SPX_FORS_HEIGHT;
     }

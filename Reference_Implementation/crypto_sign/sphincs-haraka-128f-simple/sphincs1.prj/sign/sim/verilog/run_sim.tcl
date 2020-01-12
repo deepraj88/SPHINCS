@@ -1,5 +1,5 @@
 # ==============================================================
-# File generated on Sat Oct 26 19:30:49 EDT 2019
+# File generated on Mon Nov 25 13:05:41 EST 2019
 # Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2018.3 (64-bit)
 # SW Build 2405991 on Thu Dec  6 23:36:41 MST 2018
 # IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
@@ -34,12 +34,12 @@ if {$ret == 1} {
 	return -code error -errorcode $::errorCode
 }
 
-if {[file isfile crypto_sign.autotvin.dat]} {
-	file delete -force crypto_sign.autotvin.dat
+if {[file isfile fors_sign.autotvin.dat]} {
+	file delete -force fors_sign.autotvin.dat
 }
 
-if {[file isfile crypto_sign.autotvout.dat]} {
-	file delete -force crypto_sign.autotvout.dat
+if {[file isfile fors_sign.autotvout.dat]} {
+	file delete -force fors_sign.autotvout.dat
 }
 
 sc_sim_check $ret $err "temp0.log"

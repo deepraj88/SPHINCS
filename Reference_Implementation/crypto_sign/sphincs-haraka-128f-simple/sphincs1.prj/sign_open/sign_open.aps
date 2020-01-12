@@ -6,12 +6,11 @@
         <DownStreamTool name=""/>
     </downStreamTool>
     <config>
-        <schedule model="crypto_sign_keypair"/>
+        <schedule model="crypto_sign_open"/>
         <config_interface clock_enable="0" expose_global="1" m_axi_addr64="0" m_axi_offset="off" register_io="off" trim_dangling_port="0"/>
-        <config_compile blackbox=""/>
     </config>
     <UIConfigurations>
-        <UIAutosynConf hideTrivialOp="true" isBasedOnBoard="false" isSolutionDirty="false" isStopAskAgain="false" showDetailDesignViewer="false">
+        <UIAutosynConf hideTrivialOp="true" isBasedOnBoard="false" isSolutionDirty="true" isStopAskAgain="false" showDetailDesignViewer="false">
             <Platform>xilinx/artix7/artix7</Platform>
             <Platform>xilinx/artix7/artix7_fpv6</Platform>
             <customLibs/>
@@ -49,8 +48,8 @@
         <Format formatName="syn_dcp"/>
         <Format formatName="pcore" use_netlist="none"/>
     </ExportDesign>
-    <Simulation>
-        <SimFlow askAgain="true" clangSanitizer="false" compile="false" compileChoice="gcc" disableDeadlockDetect="false" dumpTrace="none" name="cosim" optimizeCompile="false" reduce_diskspace="false" setup="false" toolName="Auto" waveDebug="false">
+    <Simulation argv="">
+        <SimFlow askAgain="false" clangSanitizer="false" compile="false" compileChoice="gcc" dumpTrace="none" name="cosim" optimizeCompile="false" reduce_diskspace="false" setup="false" toolName="auto" waveDebug="false" ldflags="" mflags="" compiledLibrary="">
             <Rtl active="false" name="systemc"/>
             <Rtl active="true" name="verilog"/>
             <Rtl active="false" name="vhdl"/>

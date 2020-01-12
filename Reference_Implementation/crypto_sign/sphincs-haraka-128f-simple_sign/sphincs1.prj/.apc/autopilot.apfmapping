@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<autopilotfilemapping:AutoPilotFileMapping xmlns:autopilotfilemapping="www.autoesl.com/autopilotfilemapping">
+  <source>
+    <originFiles name="address.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/address.c"/>
+    <originFiles name="aes.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/aes.c"/>
+    <originFiles name="fors.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/fors.c"/>
+    <originFiles name="haraka.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/haraka.c"/>
+    <originFiles name="hash_haraka.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/hash_haraka.c"/>
+    <originFiles name="rng.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/rng.c"/>
+    <originFiles name="sign.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/sign.c"/>
+    <originFiles name="thash_haraka_simple.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/thash_haraka_simple.c"/>
+    <originFiles name="utils.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/utils.c"/>
+    <originFiles name="wots.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/wots.c"/>
+  </source>
+  <testbench>
+    <originFiles name="newtest_sign.c" path="/home/dss545/vivado_hls/vivado_hls/SPHINCS+/NIST-PQ-Submission-SPHINCS-20190329/Reference_Implementation/crypto_sign/sphincs-haraka-128f-simple_sign/newtest_sign.c"/>
+  </testbench>
+</autopilotfilemapping:AutoPilotFileMapping>
