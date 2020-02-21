@@ -11,14 +11,14 @@ if {${::AESL::PGuard_autoexp_gen}} {
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 92 \
+    id 94 \
     name s \
     reset_level 1 \
     sync_rst true \
     dir IO \
     corename s \
     op interface \
-    ports { s_address0 { O 5 vector } s_ce0 { O 1 bit } s_we0 { O 1 bit } s_d0 { O 8 vector } s_q0 { I 8 vector } } \
+    ports { s_address0 { O 5 vector } s_ce0 { O 1 bit } s_we0 { O 1 bit } s_d0 { O 8 vector } s_q0 { I 8 vector } s_address1 { O 5 vector } s_ce1 { O 1 bit } s_we1 { O 1 bit } s_d1 { O 8 vector } s_q1 { I 8 vector } } \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 's'"
@@ -30,14 +30,14 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 94 \
+    id 96 \
     name rk \
     reset_level 1 \
     sync_rst true \
     dir I \
     corename rk \
     op interface \
-    ports { rk_address0 { O 10 vector } rk_ce0 { O 1 bit } rk_q0 { I 8 vector } } \
+    ports { rk_address0 { O 10 vector } rk_ce0 { O 1 bit } rk_q0 { I 8 vector } rk_address1 { O 10 vector } rk_ce1 { O 1 bit } rk_q1 { I 8 vector } } \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'rk'"
@@ -48,7 +48,7 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 # Direct connection:
 if {${::AESL::PGuard_autoexp_gen}} {
 eval "cg_default_interface_gen_dc { \
-    id 93 \
+    id 95 \
     name s_offset \
     type other \
     dir I \
@@ -63,7 +63,7 @@ eval "cg_default_interface_gen_dc { \
 # Direct connection:
 if {${::AESL::PGuard_autoexp_gen}} {
 eval "cg_default_interface_gen_dc { \
-    id 95 \
+    id 97 \
     name rk_offset \
     type other \
     dir I \

@@ -1,7 +1,7 @@
 # This script segment is generated automatically by AutoPilot
 
 # Memory (RAM/ROM)  definition:
-set ID 138
+set ID 131
 set hasByteEnable 0
 set MemName treehash_fors_fors_leaf_addr
 set CoreName ap_simcore_mem
@@ -86,7 +86,7 @@ if {[info proc ::AESL_LIB_VIRTEX::xil_gen_RAM] == "::AESL_LIB_VIRTEX::xil_gen_RA
 
 
 # Memory (RAM/ROM)  definition:
-set ID 139
+set ID 132
 set hasByteEnable 0
 set MemName treehash_fors_stack
 set CoreName ap_simcore_mem
@@ -171,7 +171,7 @@ if {[info proc ::AESL_LIB_VIRTEX::xil_gen_RAM] == "::AESL_LIB_VIRTEX::xil_gen_RA
 
 
 # Memory (RAM/ROM)  definition:
-set ID 140
+set ID 133
 set hasByteEnable 0
 set MemName treehash_fors_heights
 set CoreName ap_simcore_mem
@@ -266,7 +266,7 @@ if {${::AESL::PGuard_autoexp_gen}} {
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 141 \
+    id 134 \
     name root \
     reset_level 1 \
     sync_rst true \
@@ -285,7 +285,7 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 142 \
+    id 135 \
     name auth_path \
     reset_level 1 \
     sync_rst true \
@@ -304,7 +304,7 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 144 \
+    id 137 \
     name tree_addr \
     reset_level 1 \
     sync_rst true \
@@ -323,14 +323,14 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 145 \
+    id 138 \
     name rc_sseed \
     reset_level 1 \
     sync_rst true \
     dir I \
     corename rc_sseed \
     op interface \
-    ports { rc_sseed_address0 { O 10 vector } rc_sseed_ce0 { O 1 bit } rc_sseed_q0 { I 8 vector } } \
+    ports { rc_sseed_address0 { O 10 vector } rc_sseed_ce0 { O 1 bit } rc_sseed_q0 { I 8 vector } rc_sseed_address1 { O 10 vector } rc_sseed_ce1 { O 1 bit } rc_sseed_q1 { I 8 vector } } \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'rc_sseed'"
@@ -342,14 +342,14 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 146 \
+    id 139 \
     name rc \
     reset_level 1 \
     sync_rst true \
     dir I \
     corename rc \
     op interface \
-    ports { rc_address0 { O 10 vector } rc_ce0 { O 1 bit } rc_q0 { I 8 vector } } \
+    ports { rc_address0 { O 10 vector } rc_ce0 { O 1 bit } rc_q0 { I 8 vector } rc_address1 { O 10 vector } rc_ce1 { O 1 bit } rc_q1 { I 8 vector } } \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'rc'"
@@ -360,7 +360,7 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 # Direct connection:
 if {${::AESL::PGuard_autoexp_gen}} {
 eval "cg_default_interface_gen_dc { \
-    id 143 \
+    id 136 \
     name leaf_idx \
     type other \
     dir I \

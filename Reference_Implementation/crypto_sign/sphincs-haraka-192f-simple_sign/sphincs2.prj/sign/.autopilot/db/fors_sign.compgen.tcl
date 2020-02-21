@@ -1,7 +1,7 @@
 # This script segment is generated automatically by AutoPilot
 
 # Memory (RAM/ROM)  definition:
-set ID 145
+set ID 148
 set hasByteEnable 0
 set MemName fors_sign_indices_assign
 set CoreName ap_simcore_mem
@@ -86,7 +86,7 @@ if {[info proc ::AESL_LIB_VIRTEX::xil_gen_RAM] == "::AESL_LIB_VIRTEX::xil_gen_RA
 
 
 # Memory (RAM/ROM)  definition:
-set ID 146
+set ID 149
 set hasByteEnable 0
 set MemName fors_sign_roots
 set CoreName ap_simcore_mem
@@ -171,7 +171,7 @@ if {[info proc ::AESL_LIB_VIRTEX::xil_gen_RAM] == "::AESL_LIB_VIRTEX::xil_gen_RA
 
 
 # Memory (RAM/ROM)  definition:
-set ID 147
+set ID 150
 set hasByteEnable 0
 set MemName fors_sign_fors_tree_addr
 set CoreName ap_simcore_mem
@@ -266,7 +266,7 @@ if {${::AESL::PGuard_autoexp_gen}} {
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 148 \
+    id 151 \
     name sig \
     reset_level 1 \
     sync_rst true \
@@ -285,7 +285,7 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 149 \
+    id 152 \
     name pk \
     reset_level 1 \
     sync_rst true \
@@ -304,7 +304,7 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 150 \
+    id 153 \
     name m \
     reset_level 1 \
     sync_rst true \
@@ -323,7 +323,7 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 151 \
+    id 154 \
     name fors_addr \
     reset_level 1 \
     sync_rst true \
@@ -342,14 +342,14 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 152 \
+    id 155 \
     name rc_sseed \
     reset_level 1 \
     sync_rst true \
     dir I \
     corename rc_sseed \
     op interface \
-    ports { rc_sseed_address0 { O 10 vector } rc_sseed_ce0 { O 1 bit } rc_sseed_q0 { I 8 vector } } \
+    ports { rc_sseed_address0 { O 10 vector } rc_sseed_ce0 { O 1 bit } rc_sseed_q0 { I 8 vector } rc_sseed_address1 { O 10 vector } rc_sseed_ce1 { O 1 bit } rc_sseed_q1 { I 8 vector } } \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'rc_sseed'"
@@ -361,14 +361,14 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 153 \
+    id 156 \
     name rc \
     reset_level 1 \
     sync_rst true \
     dir I \
     corename rc \
     op interface \
-    ports { rc_address0 { O 10 vector } rc_ce0 { O 1 bit } rc_q0 { I 8 vector } } \
+    ports { rc_address0 { O 10 vector } rc_ce0 { O 1 bit } rc_q0 { I 8 vector } rc_address1 { O 10 vector } rc_ce1 { O 1 bit } rc_q1 { I 8 vector } } \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'rc'"
@@ -380,14 +380,14 @@ puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored ge
 if {${::AESL::PGuard_autoexp_gen}} {
 if {[info proc ::AESL_LIB_XILADAPTER::xil_bram_gen] == "::AESL_LIB_XILADAPTER::xil_bram_gen"} {
 eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
-    id 154 \
+    id 157 \
     name outbuf \
     reset_level 1 \
     sync_rst true \
     dir IO \
     corename outbuf \
     op interface \
-    ports { outbuf_address0 { O 5 vector } outbuf_ce0 { O 1 bit } outbuf_we0 { O 1 bit } outbuf_d0 { O 8 vector } outbuf_q0 { I 8 vector } } \
+    ports { outbuf_address0 { O 5 vector } outbuf_ce0 { O 1 bit } outbuf_we0 { O 1 bit } outbuf_d0 { O 8 vector } outbuf_q0 { I 8 vector } outbuf_address1 { O 5 vector } outbuf_ce1 { O 1 bit } outbuf_we1 { O 1 bit } outbuf_d1 { O 8 vector } } \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'outbuf'"

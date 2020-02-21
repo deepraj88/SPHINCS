@@ -205,7 +205,7 @@ eval "::AESL_LIB_XILADAPTER::xil_bram_gen { \
     dir IO \
     corename rc \
     op interface \
-    ports { rc_address0 { O 10 vector } rc_ce0 { O 1 bit } rc_we0 { O 1 bit } rc_d0 { O 8 vector } rc_q0 { I 8 vector } } \
+    ports { rc_address0 { O 10 vector } rc_ce0 { O 1 bit } rc_we0 { O 1 bit } rc_d0 { O 8 vector } rc_q0 { I 8 vector } rc_address1 { O 10 vector } rc_ce1 { O 1 bit } rc_q1 { I 8 vector } } \
 } "
 } else {
 puts "@W \[IMPL-110\] Cannot find bus interface model in the library. Ignored generation of bus interface for 'rc'"
